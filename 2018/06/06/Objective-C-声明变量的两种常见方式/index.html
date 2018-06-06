@@ -79,13 +79,17 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="sinexy&#39;s blog">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="前言：昨天新来的实习生问过了一个问题123&amp;#123;	NSString *_aString;&amp;#125; 和1@property (nonatomic, copy) NSString *aString; 这两种写法有什么区别？正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。 正文：声明在{}中的，叫做成员变量；而用 @property修">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Objective-C 声明变量的两种常见方式">
+<meta property="og:url" content="http://yoursite.com/2018/06/06/Objective-C-声明变量的两种常见方式/index.html">
 <meta property="og:site_name" content="sinexy&#39;s blog">
+<meta property="og:description" content="前言：昨天新来的实习生问过了一个问题123&amp;#123;	NSString *_aString;&amp;#125; 和1@property (nonatomic, copy) NSString *aString; 这两种写法有什么区别？正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。 正文：声明在{}中的，叫做成员变量；而用 @property修">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-06-06T04:11:59.701Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="sinexy&#39;s blog">
+<meta name="twitter:title" content="Objective-C 声明变量的两种常见方式">
+<meta name="twitter:description" content="前言：昨天新来的实习生问过了一个问题123&amp;#123;	NSString *_aString;&amp;#125; 和1@property (nonatomic, copy) NSString *aString; 这两种写法有什么区别？正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。 正文：声明在{}中的，叫做成员变量；而用 @property修">
 
 
 
@@ -115,13 +119,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/06/06/Objective-C-声明变量的两种常见方式/"/>
 
 
 
 
 
-  <title>sinexy's blog</title>
+  <title>Objective-C 声明变量的两种常见方式 | sinexy's blog</title>
   
 
 
@@ -140,8 +144,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -224,9 +227,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -256,9 +259,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/06/06/Objective-C-声明变量的两种常见方式/" itemprop="url">Objective-C 声明变量的两种常见方式</a></h1>
+          <h1 class="post-title" itemprop="name headline">Objective-C 声明变量的两种常见方式</h1>
         
 
         <div class="post-meta">
@@ -308,9 +309,7 @@
       
 
       
-        
-          
-            <h4 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h4><p>昨天新来的实习生问过了一个问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	NSString *_aString;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+        <h4 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h4><p>昨天新来的实习生问过了一个问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	NSString *_aString;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>和<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic, copy) NSString *aString;</span><br></pre></td></tr></table></figure></p>
 <p>这两种写法有什么区别？<br>正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。</p>
 <h4 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h4><p>声明在<code>{}</code>中的，叫做成员变量；而用 <code>@property</code>修饰的，顾名思义叫做属性。</p>
@@ -345,8 +344,6 @@
 <p>说到属性特质，我们可以又扯到 Objective-C 的内存管理去，所以我们下次再聊。</p>
 <h4 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h4><p>Effective+Objective-C+2.0++编写高质量iOS与OS+X代码的52个有效方法</p>
 
-          
-        
       
     </div>
     
@@ -363,132 +360,28 @@
       
 
       
-
-      
-
       
       
-        <div class="post-eof"></div>
+
       
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/05/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Yunxin Bai">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="sinexy's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/06/05/hello-world/" itemprop="url">Hello World</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
             
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-05T11:05:44+08:00">
-                2018-06-05
-              </time>
+              <a href="/2018/06/05/hello-world/" rel="next" title="Hello World">
+                <i class="fa fa-chevron-left"></i> Hello World
+              </a>
             
+          </div>
 
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
             
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
+          </div>
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <p>终于弄一个写东西的地方，不过按我尿性，怕是基本不更新(doge</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -498,10 +391,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -509,6 +403,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -529,8 +427,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -572,6 +479,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言："><span class="nav-number">1.</span> <span class="nav-text">前言：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#正文："><span class="nav-number">2.</span> <span class="nav-text">正文：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考文献"><span class="nav-number">3.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -705,6 +628,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
