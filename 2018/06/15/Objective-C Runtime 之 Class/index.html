@@ -79,17 +79,19 @@
 
 
 
-<meta name="description" content="前言：昨天突然想起前同事问过的一个问题123&amp;#123;	NSString *_aString;&amp;#125; 和1@property (nonatomic, copy) NSString *aString; 这两种写法有什么区别？正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。 正文：声明在{}中的，叫做成员变量；而用 @property">
+<meta name="description" content="前言：与 C 等面向过程的语言不同，用 Objective-C 、C++ 等面向对象语言编程时，“对象”(object)就是“基本构造单元”，开发者使用对象来传递、存储数据。在对象之间传递数据并执行操作的过程叫做消息传递或者方法调用。 Objective-C 是 C 的超集。所有 C 的代码都可以直接放在 Objective-C 程序里经过编译。而且 Objective-C 的 OOP 就是使用">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Objective-C 声明变量的两种常见方式">
-<meta property="og:url" content="http://yoursite.com/2018/06/06/Objective-C-声明变量的两种常见方式/index.html">
+<meta property="og:title" content="Objective-C Runtime 之 Class">
+<meta property="og:url" content="http://yoursite.com/2018/06/15/Objective-C Runtime 之 Class/index.html">
 <meta property="og:site_name" content="sinexy&#39;s blog">
-<meta property="og:description" content="前言：昨天突然想起前同事问过的一个问题123&amp;#123;	NSString *_aString;&amp;#125; 和1@property (nonatomic, copy) NSString *aString; 这两种写法有什么区别？正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。 正文：声明在{}中的，叫做成员变量；而用 @property">
+<meta property="og:description" content="前言：与 C 等面向过程的语言不同，用 Objective-C 、C++ 等面向对象语言编程时，“对象”(object)就是“基本构造单元”，开发者使用对象来传递、存储数据。在对象之间传递数据并执行操作的过程叫做消息传递或者方法调用。 Objective-C 是 C 的超集。所有 C 的代码都可以直接放在 Objective-C 程序里经过编译。而且 Objective-C 的 OOP 就是使用">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-06-21T09:50:32.196Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/WiInputMethod/interview/master/img/ios-runtime-class.png">
+<meta property="og:updated_time" content="2018-07-03T01:49:44.181Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Objective-C 声明变量的两种常见方式">
-<meta name="twitter:description" content="前言：昨天突然想起前同事问过的一个问题123&amp;#123;	NSString *_aString;&amp;#125; 和1@property (nonatomic, copy) NSString *aString; 这两种写法有什么区别？正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。 正文：声明在{}中的，叫做成员变量；而用 @property">
+<meta name="twitter:title" content="Objective-C Runtime 之 Class">
+<meta name="twitter:description" content="前言：与 C 等面向过程的语言不同，用 Objective-C 、C++ 等面向对象语言编程时，“对象”(object)就是“基本构造单元”，开发者使用对象来传递、存储数据。在对象之间传递数据并执行操作的过程叫做消息传递或者方法调用。 Objective-C 是 C 的超集。所有 C 的代码都可以直接放在 Objective-C 程序里经过编译。而且 Objective-C 的 OOP 就是使用">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/WiInputMethod/interview/master/img/ios-runtime-class.png">
 
 
 
@@ -119,13 +121,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/06/06/Objective-C-声明变量的两种常见方式/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/06/15/Objective-C Runtime 之 Class/"/>
 
 
 
 
 
-  <title>Objective-C 声明变量的两种常见方式 | sinexy's blog</title>
+  <title>Objective-C Runtime 之 Class | sinexy's blog</title>
   
 
 
@@ -242,7 +244,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/06/Objective-C-声明变量的两种常见方式/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/15/Objective-C Runtime 之 Class/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Yunxin Bai">
@@ -259,7 +261,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Objective-C 声明变量的两种常见方式</h1>
+          <h1 class="post-title" itemprop="name headline">Objective-C Runtime 之 Class</h1>
         
 
         <div class="post-meta">
@@ -271,8 +273,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-06T12:11:21+08:00">
-                2018-06-06
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-15T11:11:21+08:00">
+                2018-06-15
               </time>
             
 
@@ -309,41 +311,22 @@
       
 
       
-        <h4 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h4><p>昨天突然想起前同事问过的一个问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	NSString *_aString;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>和<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic, copy) NSString *aString;</span><br></pre></td></tr></table></figure></p>
-<p>这两种写法有什么区别？<br>正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。</p>
-<h4 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h4><p>声明在<code>{}</code>中的，叫做成员变量；而用 <code>@property</code>修饰的，顾名思义叫做属性。</p>
-<p>先说区别：</p>
-<ul>
-<li><p>在’{}’中声明的成员变量，级别是<code>protected</code>的。简单来说就是子类和当前类可以使用这个成员变量，其他类不可以。而用‘@property’声明的变量,级别是<code>public</code>，可以在当前类或者其他类中被访问。</p>
-</li>
-<li><p>在’{}’中声明成员变量，使用变量名进行访问；‘@property’声明的变量，使用_变量名(在变量名前加一个下划线),或者self.变量名进行访问。</p>
-</li>
-<li><p>在’{}’中声明成员变量，直接访问保存实例变量的那块内存，没有调用 set/get 方法，不走“方法派发”(method dispatch)，所以要更快。</p>
-</li>
-<li><p>在’{}’中声明成员变量，不走 set 方法，自然就没有一堆属性特质，那也就绕过了内存管理语义。</p>
-</li>
-<li><p>在’{}’中声明成员变量，不会触发 KVO(Key-Value Observing)。</p>
-</li>
-</ul>
-<p>其实，对于写 Java 或者 C++的同学来说，在’{}’中声明成员变量这种写法再正常不过，而 Objective-C 代码通常不这样写。因为这种写法：</p>
-<blockquote>
-<p>对象布局在编译期(compile time)就已经固定了。</p>
-</blockquote>
-<p>眼神好的同学应该注意到“编译期”这三个字。想想看，Objective-C 的一项重要特性——运行时。在某个类中动态添加属性是不是很高级？</p>
-<blockquote>
-<p>只要碰到访问 _aString 变量的代码，编译器就把其替换为“偏移量”(offset)，这个偏移量是“硬编码”(hardcode)，表示该变量存放对象的内存区域的其实地址有多远。这样做看起来没什么问题，但是如果又加了一个实例变量，那就麻烦了。</p>
-</blockquote>
-<p>当然，这个问题苹果工程师已经解决了，他们的做法是把实例变量当做一种存储偏移量所用的“特殊变量”(special variable)，交由“类对象”(class object)保管。偏移量会在运行期查找，如果类的定义变了，那么存储的偏移量也就变了，无论何时访问实例变量，总能使用正确的偏移量。</p>
-<p>而另一个解决方案就是使用‘@property’。其实<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic) NSString *aString;</span><br></pre></td></tr></table></figure></p>
-<p>相当于<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	NSString *_aString;</span><br><span class="line">&#125;</span><br><span class="line">- (NSString *)aString;</span><br><span class="line">- (void)setAString:(NSString *)aString;</span><br></pre></td></tr></table></figure></p>
-<p>想要访问属性，可以使用 _aString 或者 self.aString。写 Java 的同学又开心了，因为这个”.属性名”和 Java 的中写看起来一样。其实，在 Objective-C 中，没有”点语法”，这是编译器搞出来的。在使用  self.aString 时，编译器会将其转换为对应的存取方法调用。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AObject *aObject = [AObject new];</span><br><span class="line">aObject.aString = @&quot;一堆文字&quot;;</span><br><span class="line">NSLog(@&quot;%@&quot;,aObject.aString);  // 打印结果我不写</span><br></pre></td></tr></table></figure>
-<p>相当于<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AObject *aObject = [AObject new];</span><br><span class="line">[aObject setAString:@&quot;一堆文字&quot;];</span><br><span class="line">NSLog(@&quot;%@&quot;,[aObject aString]);</span><br></pre></td></tr></table></figure></p>
-<p>如果<code>@property</code>只有这点作用，存在的意义就不大了。所以，属性特质就出现了。(因果逻辑 doge)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic, readwrite, copy) NSString *aString;</span><br></pre></td></tr></table></figure></p>
-<p>说到属性特质，我们可以又扯到 Objective-C 的内存管理去，所以我们下次再聊。</p>
+        <h4 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h4><p>与 C 等面向过程的语言不同，用 Objective-C 、C++ 等面向对象语言编程时，<strong>“对象”(object)</strong>就是“基本构造单元”，开发者使用对象来传递、存储数据。在对象之间传递数据并执行操作的过程叫做<strong>消息传递</strong>或者<strong>方法调用</strong>。</p>
+<p>Objective-C 是 C 的超集。所有 C 的代码都可以直接放在 Objective-C 程序里经过编译。而且 Objective-C 的 OOP 就是使用 C 结构体模拟的。</p>
+<p>既然说到了 OO 编程，那就先聊聊 Objective-C 中的类吧，源码在<a href="https://opensource.apple.com/tarballs/objc4/" target="_blank" rel="noopener">这里</a>可以看到。</p>
+<p>有任何不对的地方，还望大家批评指正。</p>
+<h4 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h4><p><code>Class</code> 是一个指向 <code>objc_class</code>结构体的指针：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_class *Class;</span><br></pre></td></tr></table></figure></p>
+<p><code>objc_class</code>结构体的定义如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class &#123;</span><br><span class="line">	struct objc_class *isa;	</span><br><span class="line">	struct objc_class *super_class;	</span><br><span class="line">	const char *name;		</span><br><span class="line">	long version;</span><br><span class="line">	long info;</span><br><span class="line">	long instance_size;</span><br><span class="line">	struct objc_ivar_list *ivars;</span><br><span class="line"></span><br><span class="line">#if defined(Release3CompatibilityBuild)</span><br><span class="line">	struct objc_method_list *methods;</span><br><span class="line">#else</span><br><span class="line">	struct objc_method_list **methodLists;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">	struct objc_cache *cache;</span><br><span class="line"> 	struct objc_protocol_list *protocols;</span><br><span class="line">#endif</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>下面依次了解一下各成员变量的意义：</p>
+<p><code>isa</code>: 大名鼎鼎的 isa 指针，相信面试中大多数人都遇到过这个问题，说说什么 isa<br>描述 Objective-C 对象所用的数据结构在 runtime.h 中可以看到，id 类型本身也定义在这里：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_object &#123;</span><br><span class="line">	Class isa;</span><br><span class="line">&#125;  *id;</span><br></pre></td></tr></table></figure></p>
+<p>其实顾名思义，is a ，该变量定义了对象所属的类，该对象属于哪个类，isa 就指向那个类，<img src="https://raw.githubusercontent.com/WiInputMethod/interview/master/img/ios-runtime-class.png" alt="这张图片"><br>这张图早已说明了一切：<br>类中的 super_class 指针用来追溯整个继承链。isa 指针找到其所属的类。</p>
+<p><code>super_class</code>: 指向该类的父类，如果该类已是根类，则为 NULL<br><code>name</code>: 类名<br><code>version</code>: 版本信息<br><code>info</code>: 类信息<br><code>instance_size</code>: 实例大小<br><code>ivars</code>: 成员变量地址列表，还记得之前说过的声明成员变量的两种常见方式么，里面提到把成员变量当做一种储存偏移量的特殊变量，交由类对象保管。就保管在这里呢<br><code>methodLists</code>: 方法列表。<br><code>cache</code>: 方法缓存。<br><code>protocols</code>: 协议列表。</p>
+<h5 id="元类-Meta-Class"><a href="#元类-Meta-Class" class="headerlink" title="元类(Meta Class)"></a>元类(Meta Class)</h5><p>所有的类自身也是一个对象。元类存储着一个类的所有类方法。元类也是一个类，它的<code>isa</code>指针，指向基类的元类，基类的元类的<code>isa</code>指针指向它自己，这就形成了一个闭环。</p>
 <h4 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h4><ul>
-<li>Effective+Objective-C+2.0++编写高质量iOS与OS+X代码的52个有效方法</li>
+<li><a href="http://chachatelier.fr/programmation/fichiers/cpp-objc-en.pdf" target="_blank" rel="noopener">From C++ to Objective-C</a></li>
+<li><a href="http://southpeak.github.io/2014/10/25/objective-c-runtime-1/" target="_blank" rel="noopener">Objective-C Runtime 运行时之一：类与对象</a></li>
+<li><a href="http://yulingtianxia.com/blog/2014/11/05/objective-c-runtime/#Class" target="_blank" rel="noopener">Objective-C Runtime</a></li>
+<li>《Effective+Objective-C+2.0++编写高质量iOS与OS+X代码的52个有效方法》</li>
 </ul>
 
       
@@ -369,8 +352,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/06/05/hello-world/" rel="next" title="Hello World">
-                <i class="fa fa-chevron-left"></i> Hello World
+              <a href="/2018/06/08/iOS的内存管理/" rel="next" title="Objective-C 的内存管理">
+                <i class="fa fa-chevron-left"></i> Objective-C 的内存管理
               </a>
             
           </div>
@@ -378,10 +361,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/06/08/iOS的内存管理/" rel="prev" title="Objective-C 的内存管理">
-                Objective-C 的内存管理 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -495,7 +474,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言："><span class="nav-number">1.</span> <span class="nav-text">前言：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#正文："><span class="nav-number">2.</span> <span class="nav-text">正文：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考文献"><span class="nav-number">3.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言："><span class="nav-number">1.</span> <span class="nav-text">前言：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#正文："><span class="nav-number">2.</span> <span class="nav-text">正文：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#元类-Meta-Class"><span class="nav-number">2.1.</span> <span class="nav-text">元类(Meta Class)</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考文献"><span class="nav-number">3.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
