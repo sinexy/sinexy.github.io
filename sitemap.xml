@@ -2,7 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://yoursite.com/2018/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/</loc>
+    <loc>http://yoursite.com/2016/08/07/KVO/</loc>
+    
+    <lastmod>2024-12-15</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2016/07/06/RunLoop/</loc>
+    
+    <lastmod>2024-12-15</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/</loc>
     
     <lastmod>2024-12-15</lastmod>
     
@@ -39,15 +57,6 @@
   
   <url>
     <loc>http://yoursite.com/2016/03/03/hello-world/</loc>
-    
-    <lastmod>2024-12-15</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://yoursite.com/2018/07/06/RunLoop/</loc>
     
     <lastmod>2024-12-15</lastmod>
     

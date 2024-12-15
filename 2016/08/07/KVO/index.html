@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>KVO | sinexy&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="KVO 的概念KVO（Key-Value Observing）是 iOS 开发中一个强大的机制，允许对象观察其他对象的属性变化。在实现数据绑定、视图更新和响应数据变化时非常有用。 KVO是一种基于观察者模式的机制，它允许对象观察某个属性的变化，并在变化时收到通知。被观察的属性必须是KVC（Key-Value Coding）兼容的，这意味着属性需要通过键值访问。KVO 的工作原理当你为一个对象的属性">
+<meta property="og:type" content="article">
+<meta property="og:title" content="KVO">
+<meta property="og:url" content="http://yoursite.com/2016/08/07/KVO/index.html">
+<meta property="og:site_name" content="sinexy&#39;s blog">
+<meta property="og:description" content="KVO 的概念KVO（Key-Value Observing）是 iOS 开发中一个强大的机制，允许对象观察其他对象的属性变化。在实现数据绑定、视图更新和响应数据变化时非常有用。 KVO是一种基于观察者模式的机制，它允许对象观察某个属性的变化，并在变化时收到通知。被观察的属性必须是KVC（Key-Value Coding）兼容的，这意味着属性需要通过键值访问。KVO 的工作原理当你为一个对象的属性">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-08-07T13:27:32.000Z">
+<meta property="article:modified_time" content="2024-12-15T03:51:18.869Z">
+<meta property="article:author" content="Yunxin Bai">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="sinexy&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">sinexy&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-KVO" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/08/07/KVO/" class="article-date">
+  <time datetime="2016-08-07T13:27:32.000Z" itemprop="datePublished">2016-08-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      KVO
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>KVO 的概念</strong><br>KVO（Key-Value Observing）是 iOS 开发中一个强大的机制，允许对象观察其他对象的属性变化。在实现数据绑定、视图更新和响应数据变化时非常有用。</p>
+<p>KVO是一种基于观察者模式的机制，它允许对象观察某个属性的变化，并在变化时收到通知。被观察的属性必须是KVC（Key-Value Coding）兼容的，这意味着属性需要通过键值访问。<br><strong>KVO 的工作原理</strong><br>当你为一个对象的属性注册为观察者时，iOS底层会动态地生成一个对象的子类（通过Objective-C运行时），并重写属性的setter方法。这个setter方法会在属性发生变化时通知所有的观察者。</p>
+<p>观察者通过以下方法接收变化：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath </span><br><span class="line">                      ofObject:(id)object </span><br><span class="line">                        change:(NSDictionary&lt;NSKeyValueChangeKey, id&gt; *)change </span><br><span class="line">                       context:(void *)context;</span><br></pre></td></tr></table></figure>
+
+<p><strong>KVO 的使用步骤</strong></p>
+<ol>
+<li>添加观察者<br>使用addObserver:forKeyPath:options:context:方法为某个对象的属性添加观察者。例如：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[self.person addObserver:self </span><br><span class="line">              forKeyPath:@&quot;name&quot; </span><br><span class="line">                 options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld </span><br><span class="line">                 context:nil];</span><br></pre></td></tr></table></figure>
+
+<p>参数说明：</p>
+<ul>
+<li>observer：观察者对象。</li>
+<li>keyPath：需要观察的属性路径。</li>
+<li>options：指定需要的变化信息（如新值、旧值等）。</li>
+<li>context：上下文指针，可以传递额外的信息。</li>
+</ul>
+<ol start="2">
+<li>实现回调方法<br>当被观察属性的值变化时，observeValueForKeyPath:ofObject:change:context:方法会被调用：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath </span><br><span class="line">                      ofObject:(id)object </span><br><span class="line">                        change:(NSDictionary&lt;NSKeyValueChangeKey, id&gt; *)change </span><br><span class="line">                       context:(void *)context &#123;</span><br><span class="line">    if ([keyPath isEqualToString:@&quot;name&quot;]) &#123;</span><br><span class="line">        NSLog(@&quot;旧值: %@, 新值: %@&quot;, change[NSKeyValueChangeOldKey], change[NSKeyValueChangeNewKey]);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>移除观察者<br>在不需要观察时，记得移除观察者，避免内存泄漏或崩溃：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[self.person removeObserver:self forKeyPath:@&quot;name&quot;];</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>常见KVO选项</li>
+</ol>
+<ul>
+<li><code>NSKeyValueObservingOptionNew：</code> 回调中包含新值。</li>
+<li><code>NSKeyValueObservingOptionOld：</code> 回调中包含旧值。</li>
+<li><code>NSKeyValueObservingOptionInitial：</code> 立即收到初始值的通知。</li>
+<li><code>NSKeyValueObservingOptionPrior：</code> 在值变化前后都会收到通知。</li>
+</ul>
+<p><strong>注意事项和最佳实践</strong></p>
+<ol>
+<li>移除观察者</li>
+</ol>
+<ul>
+<li>在对象释放之前，必须移除所有观察者，否则会导致崩溃。</li>
+<li>在<code>dealloc</code>中确保移除所有观察者。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (void)dealloc &#123;</span><br><span class="line">    [self.person removeObserver:self forKeyPath:@&quot;name&quot;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>避免重复添加观察者</li>
+</ol>
+<ul>
+<li>重复添加观察者会导致多次回调，容易引发bug。</li>
+</ul>
+<ol start="3">
+<li>线程安全</li>
+</ol>
+<ul>
+<li>如果被观察的属性在多线程环境下被修改，可能会导致不一致或崩溃。可以使用同步锁或<code>@synchronized</code>确保线程安全。</li>
+</ul>
+<ol start="4">
+<li>只能观察KVC兼容属性</li>
+</ol>
+<ul>
+<li>直接使用<code>@property</code>声明的属性是<code>KVC</code>兼容的，动态添加的变量（如ivar）不支持<code>KVO</code>。</li>
+</ul>
+<ol start="5">
+<li>使用上下文来区分观察者</li>
+</ol>
+<ul>
+<li>如果同一个类中观察了多个属性，可以使用<code>context</code>参数区分不同的观察。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">static void *NameContext = &amp;NameContext;</span><br><span class="line"></span><br><span class="line">[self.person addObserver:self forKeyPath:@&quot;name&quot; options:... context:NameContext];</span><br></pre></td></tr></table></figure>
+<p>在回调中检查上下文：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (context == NameContext) &#123;</span><br><span class="line">    // 处理 name 的变化</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>KVO的局限性</li>
+</ol>
+<ul>
+<li>容易出错：忘记移除观察者可能导致崩溃。</li>
+<li>调试困难：错误可能隐藏在底层动态生成的代码中。</li>
+<li>性能问题：KVO在观察大量属性时可能导致性能下降。</li>
+<li>代码复杂性：对复杂属性依赖的观察管理不便。</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/08/07/KVO/" data-id="cm4p2kc2t0000wocaawe0c26n" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/07/06/RunLoop/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">RunLoop</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">June 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/08/07/KVO/">KVO</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/06/RunLoop/">RunLoop</a>
+          </li>
+        
+          <li>
+            <a href="/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/">Objective-C 之消息机制</a>
+          </li>
+        
+          <li>
+            <a href="/2016/05/06/Objective-C-%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F/">Objective-C 声明变量的两种常见方式</a>
+          </li>
+        
+          <li>
+            <a href="/2016/04/15/Objective-C%20Runtime%20%E4%B9%8B%20Class/">Objective-C Runtime 之 Class</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Yunxin Bai<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

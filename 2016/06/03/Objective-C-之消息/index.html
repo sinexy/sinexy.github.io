@@ -10,12 +10,12 @@
   <meta name="description" content="前言：初学 Objective-C 时， 不觉得 [object doSomething] 与 doSomething() 有什么不一样，最多是写法看起来奇葩一点。随着了解的深入，渐渐觉得 Runtime 黑魔法简直不要太好用。 有任何不对的地方，还望大家批评指正。 正文：调用对象的方法，是再日常不过的操作。其他语言叫做方法调用，在 Objective-C 中叫做“消息传递”。消息有“名称”(na">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Objective-C 之消息机制">
-<meta property="og:url" content="http://yoursite.com/2018/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/index.html">
+<meta property="og:url" content="http://yoursite.com/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/index.html">
 <meta property="og:site_name" content="sinexy&#39;s blog">
 <meta property="og:description" content="前言：初学 Objective-C 时， 不觉得 [object doSomething] 与 doSomething() 有什么不一样，最多是写法看起来奇葩一点。随着了解的深入，渐渐觉得 Runtime 黑魔法简直不要太好用。 有任何不对的地方，还望大家批评指正。 正文：调用对象的方法，是再日常不过的操作。其他语言叫做方法调用，在 Objective-C 中叫做“消息传递”。消息有“名称”(na">
 <meta property="og:locale">
-<meta property="article:published_time" content="2018-06-03T02:15:16.000Z">
-<meta property="article:modified_time" content="2024-12-15T03:24:14.513Z">
+<meta property="article:published_time" content="2016-06-03T02:15:16.000Z">
+<meta property="article:modified_time" content="2024-12-15T03:29:33.180Z">
 <meta property="article:author" content="Yunxin Bai">
 <meta name="twitter:card" content="summary">
   
@@ -68,8 +68,8 @@
       <div class="outer">
         <section id="main"><article id="post-Objective-C-之消息" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2018/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/" class="article-date">
-  <time datetime="2018-06-03T02:15:16.000Z" itemprop="datePublished">2018-06-03</time>
+    <a href="/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/" class="article-date">
+  <time datetime="2016-06-03T02:15:16.000Z" itemprop="datePublished">2016-06-03</time>
 </a>
     
   </div>
@@ -141,7 +141,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/" data-id="cm4p02l8u0002xdcacyq05aw2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/" data-id="cm4p02l8u0002xdcacyq05aw2" class="article-share-link">Share</a>
       
       
     </footer>
@@ -150,7 +150,7 @@
     
 <nav id="article-nav">
   
-    <a href="/2018/07/06/RunLoop/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2016/07/06/RunLoop/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
@@ -186,7 +186,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">June 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
     </div>
   </div>
 
@@ -199,11 +199,15 @@
       <ul>
         
           <li>
-            <a href="/2018/07/06/RunLoop/">RunLoop</a>
+            <a href="/2016/08/07/KVO/">KVO</a>
           </li>
         
           <li>
-            <a href="/2018/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/">Objective-C 之消息机制</a>
+            <a href="/2016/07/06/RunLoop/">RunLoop</a>
+          </li>
+        
+          <li>
+            <a href="/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/">Objective-C 之消息机制</a>
           </li>
         
           <li>
@@ -212,10 +216,6 @@
         
           <li>
             <a href="/2016/04/15/Objective-C%20Runtime%20%E4%B9%8B%20Class/">Objective-C Runtime 之 Class</a>
-          </li>
-        
-          <li>
-            <a href="/2016/03/08/iOS%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">Objective-C 的内存管理</a>
           </li>
         
       </ul>
