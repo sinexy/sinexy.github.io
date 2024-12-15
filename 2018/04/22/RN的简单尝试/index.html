@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>RN 的简单尝试 | sinexy&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="React Native (RN) 是一个由 Facebook 推出的跨平台开发框架，用于构建原生移动应用（iOS 和 Android），并允许开发者使用 JavaScript 和 React 来编写应用逻辑。React Native 的一个重要特点是，应用的界面和交互都是通过原生组件（native components）来渲染的，而不是通过 WebView 来实现，这与传统的混合开发框架（如 I">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RN 的简单尝试">
+<meta property="og:url" content="http://yoursite.com/2018/04/22/RN%E7%9A%84%E7%AE%80%E5%8D%95%E5%B0%9D%E8%AF%95/index.html">
+<meta property="og:site_name" content="sinexy&#39;s blog">
+<meta property="og:description" content="React Native (RN) 是一个由 Facebook 推出的跨平台开发框架，用于构建原生移动应用（iOS 和 Android），并允许开发者使用 JavaScript 和 React 来编写应用逻辑。React Native 的一个重要特点是，应用的界面和交互都是通过原生组件（native components）来渲染的，而不是通过 WebView 来实现，这与传统的混合开发框架（如 I">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-04-22T08:57:21.000Z">
+<meta property="article:modified_time" content="2024-12-15T10:16:49.646Z">
+<meta property="article:author" content="Yunxin Bai">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="sinexy&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">sinexy&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-RN的简单尝试" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/04/22/RN%E7%9A%84%E7%AE%80%E5%8D%95%E5%B0%9D%E8%AF%95/" class="article-date">
+  <time datetime="2018-04-22T08:57:21.000Z" itemprop="datePublished">2018-04-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      RN 的简单尝试
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>React Native (RN) 是一个由 Facebook 推出的跨平台开发框架，用于构建原生移动应用（iOS 和 Android），并允许开发者使用 JavaScript 和 React 来编写应用逻辑。React Native 的一个重要特点是，应用的界面和交互都是通过原生组件（native components）来渲染的，而不是通过 WebView 来实现，这与传统的混合开发框架（如 Ionic、Cordova）有所不同。</p>
+<ol>
+<li>React Native的基本概念<br>React Native 允许开发者使用 JavaScript 和 React（一个用于构建用户界面的JavaScript库）来编写原生应用的界面和逻辑。与传统的 混合开发框架 不同，React Native 直接使用原生的UI组件，能够提供更接近原生应用的体验。</li>
+</ol>
+<p>UI渲染： React Native 使用原生组件来渲染界面，而不是通过 WebView。它将 JavaScript 代码转换为原生代码并通过桥接机制与设备进行交互，渲染出原生平台的UI元素。<br>跨平台开发： 一套代码可以在 iOS 和 Android 平台上运行，只需要少量的适配代码。React Native 会根据平台的不同渲染不同的原生组件，并能够访问两种平台的原生 API。</p>
+<ol start="2">
+<li>React Native的工作原理<br>React Native 是通过将 JavaScript 代码转换成平台特定的原生代码来工作的。具体流程如下：</li>
+</ol>
+<p>JavaScript 线程： React Native 的 JavaScript 代码在一个独立的线程中执行，该线程负责处理应用的业务逻辑、UI 更新和事件响应等。</p>
+<p>原生 UI 组件： 与 WebView 不同，React Native 并不是将界面渲染为 HTML，而是将界面渲染为原生组件（iOS 上使用 UIKit，Android 上使用 Android Views）。这些原生组件和应用的 UI 是完全一致的，可以享受原生应用的性能和流畅度。</p>
+<p>桥接（Bridge）： JavaScript 代码与原生代码之间通过一个称为 Bridge 的机制进行通信。通过桥接，JavaScript 代码可以调用原生API，原生代码也可以调用 JavaScript 代码。</p>
+<p>线程通信： React Native 使用异步的消息传递机制（通过桥接）来让 JavaScript 和原生代码之间进行交互。所有的 UI 渲染任务都由原生线程处理，而所有的 JavaScript 代码逻辑（如事件处理、状态管理）都在 JavaScript 线程中运行。</p>
+<p>原生模块与 API： 如果 React Native 没有内置某个特定的原生功能，开发者可以通过 Native Modules 扩展应用，编写自己的原生代码，来访问设备的硬件功能（如相机、定位、传感器等）或调用操作系统的原生 API。</p>
+<ol start="3">
+<li>React Native 的优点</li>
+</ol>
+<p>跨平台开发：</p>
+<p>一套代码可以运行在 iOS 和 Android 平台上，减少了开发和维护的工作量。尽管有些平台特定的差异需要调整，但基本的业务逻辑和组件可以共享。<br>平台适配：React Native 支持平台特定的代码分支（如 Platform.OS），可以在不同平台上进行不同的处理。</p>
+<p>原生性能：</p>
+<p>React Native 渲染的 UI 组件是原生组件，因此性能接近于原生应用，而不是 WebView 的渲染方式，这使得 React Native 可以处理更加复杂的 UI 和动画。<br>在需要进行性能优化时，React Native 允许开发者通过原生模块来编写性能密集型的代码。</p>
+<p>快速开发：</p>
+<p>热更新（Hot Reloading）：开发者可以在不重启应用的情况下更新和预览代码。它可以极大地提高开发效率。<br>实时调试： React Native 提供了类似浏览器开发者工具的调试功能，使得开发者可以实时查看应用状态、日志、UI布局等，进一步提升开发效率。</p>
+<p>丰富的社区支持：</p>
+<p>React Native 拥有一个庞大的开发者社区，提供了丰富的开源库和工具（如导航库、状态管理库等），以及大量的资源和教程。<br>由于 React Native 与 React 密切集成，React 开发者可以快速上手。</p>
+<p>代码复用：</p>
+<p>跨平台代码共享：除了与原生代码相关的部分，React Native 提供了大量通用的组件和库，减少了重复的代码工作。例如，列表、按钮、文本框等通用组件，完全可以在不同平台上共享。</p>
+<ol start="4">
+<li>React Native 的缺点</li>
+</ol>
+<p>性能瓶颈：</p>
+<p>尽管 React Native 提供了原生组件的渲染，但仍然通过 JavaScript 线程和原生线程之间的桥接来进行通信。在大量的数据处理、动画或复杂交互时，桥接的异步通信可能导致性能瓶颈，影响应用流畅度。<br>对于要求非常高的图形渲染（如游戏、复杂的动画效果等），React Native 可能不如完全原生开发的应用。</p>
+<p>平台差异：</p>
+<p>尽管 React Native 提供跨平台的能力，但不同平台（iOS 和 Android）仍然会有许多不同的表现和特性。有时需要写平台特定的代码来解决不同平台上的差异。<br>比如，iOS 和 Android 在样式、布局、导航、手势处理等方面有差异，因此需要为每个平台做适当的适配。</p>
+<p>原生模块的限制：</p>
+<p>对于一些原生平台特有的功能，React Native 可能没有现成的解决方案。虽然 React Native 允许开发者通过原生模块扩展功能，但这需要开发者具备一定的原生开发经验。<br>如果没有合适的第三方库或社区支持，开发者可能需要自己编写原生代码，这增加了开发复杂性。</p>
+<p>更新和维护：</p>
+<p>React Native 是一个快速发展的框架，每个新版本可能会对现有功能和API造成变化，因此需要定期更新和维护。<br>更新过程中可能会出现破坏性变化（breaking changes），导致应用需要进行重构或适配新版本。<br>较大的应用体积：</p>
+<p>相较于完全原生开发的应用，React Native 应用的体积通常较大，因为它包含了 JavaScript 引擎、React Native 框架及其所有的依赖库。这意味着，React Native 的应用包体积较大，可能影响用户的下载和安装体验。</p>
+<p>对 JavaScript 性能依赖：</p>
+<p>由于 React Native 依赖于 JavaScript 代码的执行性能，它的性能受限于 JavaScript 引擎的效率。在某些需要大量计算或高性能的应用场景中，React Native 可能无法完全满足需求。</p>
+<p>总之，React Native 是一个功能强大且社区活跃的跨平台框架，适用于需要同时支持 iOS 和 Android 的应用。它提供了原生的性能和体验，并且允许开发者使用 JavaScript 和 React 来构建应用。尽管 React Native 在性能、平台适配和原生模块扩展等方面存在一定的局限性，但它仍然是一个非常流行的选择，尤其适用于快速开发和中小型应用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/04/22/RN%E7%9A%84%E7%AE%80%E5%8D%95%E5%B0%9D%E8%AF%95/" data-id="cm4pgbw5000005tcaeug689ep" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/07/21/%E5%85%B3%E4%BA%8E%E5%A4%A7%E5%89%8D%E7%AB%AF%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          关于大前端的一些想法
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/01/07/%E5%85%B3%E4%BA%8E%E6%B7%B7%E5%90%88%E5%BC%80%E5%8F%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">关于混合开发的一些想法</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">May 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">March 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">February 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">January 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">June 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/07/21/%E5%85%B3%E4%BA%8E%E5%A4%A7%E5%89%8D%E7%AB%AF%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">关于大前端的一些想法</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/22/RN%E7%9A%84%E7%AE%80%E5%8D%95%E5%B0%9D%E8%AF%95/">RN 的简单尝试</a>
+          </li>
+        
+          <li>
+            <a href="/2018/01/07/%E5%85%B3%E4%BA%8E%E6%B7%B7%E5%90%88%E5%BC%80%E5%8F%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">关于混合开发的一些想法</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/10/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E5%85%AD%EF%BC%89/">人月神话（十六）</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/15/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%BA%94%EF%BC%89/">人月神话（十五）</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Yunxin Bai<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
