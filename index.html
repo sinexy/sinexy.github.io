@@ -64,10 +64,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-iOS 接口与API设计" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-人月神话（十六）" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/10/16/iOS%20%E6%8E%A5%E5%8F%A3%E4%B8%8EAPI%E8%AE%BE%E8%AE%A1/" class="article-date">
-  <time datetime="2016-10-16T06:01:54.000Z" itemprop="datePublished">2016-10-16</time>
+    <a href="/2017/09/10/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E5%85%AD%EF%BC%89/" class="article-date">
+  <time datetime="2017-09-10T05:51:08.000Z" itemprop="datePublished">2017-09-10</time>
 </a>
     
   </div>
@@ -78,7 +78,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/10/16/iOS%20%E6%8E%A5%E5%8F%A3%E4%B8%8EAPI%E8%AE%BE%E8%AE%A1/">iOS 接口与API设计</a>
+      <a class="article-title" href="/2017/09/10/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E5%85%AD%EF%BC%89/">人月神话（十六）</a>
     </h1>
   
 
@@ -86,37 +86,27 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>在团队开发中，不可避免会将某些代码发布出来供其他同事使用，那么我们在编写接口时就会将其设计成易用复用的形式。需要参考 Objective-C 语言的编程范式，还需要了解各种可能遇到的陷阱。</p>
-<p><strong>1. 用前缀避免命名空间冲突</strong><br>OC没有其他语言中内置的命名空间机制，所以我们在命名的时候要设法避免潜在的命名冲突，否则很容易重名。如果发生命名冲突，程序的链接过程就会出错，因为其中出现了重复符号：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">duplicate symbol _OBJC_METACLASS_$_MyClass in:</span><br><span class="line">    build/something.o</span><br><span class="line">    build/something._else.o</span><br><span class="line">duplicate symbol _OBJC_CLASS_$_MyClass in:</span><br><span class="line">    build/something.o</span><br><span class="line">    build/something._else.o</span><br></pre></td></tr></table></figure>
-<p>错误原因在于，两份代码都各自实现了名为<code>MyClass</code>的类，这导致所对应的类符号和“元类”符号各定义了两次。避免此问题的唯一办法是变相实现命名空间，给所有名称都加上适当的前缀。</p>
-<p><strong>2. 提供”全能初始化方法”</strong><br>所有对象都要初始化，在初始化时，有些对象可能无须开发者提供额外信息，但通过来说大部分对象在初始化时候都需要提供某些信息，如果对象不知道必要的信息，则无法完成其工作。<br>比如说，要编写一个学生类。其接口可以这样子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@interface MyStudent: NSObject</span><br><span class="line">@property (nonatomic, copy, readonly) NSString name;</span><br><span class="line">@property (nonatomic, assign, readonly) int age;</span><br><span class="line">@property (nonatomic, assign, readonly) int number;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
-<p>我们把属性声明为只读，这样一来，外界就无法设置 MyStudent 对象的属性了。我们可以提供初始化方法以设置这些属性：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (MyStudent)initWithName:(NSString *)name age:(int)age andNumber:(int)number&#123;</span><br><span class="line">    if((self = [super init]))&#123;</span><br><span class="line">        _name = name;</span><br><span class="line">        _age = age;</span><br><span class="line">        _number = number;</span><br><span class="line">    &#125;</span><br><span class="line">    return self;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>3. 实现 description 方法</strong><br>调试时，经常需要打印并查看对象信息。一种办法是把对象的全部属性都一一输出，但常见的做法还是像下面这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;object = %@&quot;, object);</span><br></pre></td></tr></table></figure>
-<p>在构建需要打印到日志的字符串时，<code>object</code>对象会收到<code>description</code>消息，该方法所返回的描述信息将取代“格式字符串”(format string)里的 “%@”。比如说，<code>object</code>是个数组，用下列代码打印其信息时：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">NSArray *object = @[@&quot;A&quot;,&quot;B&quot;];</span><br><span class="line">NSLog(@&quot;object = %@&quot;, object);</span><br></pre></td></tr></table></figure>
-<p>则会输出：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">object = (&quot;A&quot;,&quot;B&quot;)</span><br></pre></td></tr></table></figure>
-<p>然而，如果在自定义的类上这么做，那么输出的信息却是下面这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">object = &lt;MyStudent: 0x7fd9a1600600&gt;</span><br></pre></td></tr></table></figure>
-<p>这种日志对我们开发调试没啥帮助，所以我们要在自定义的类里面覆写<code>description</code>方法，输出更有用的信息。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (NSString *)description&#123;</span><br><span class="line">    return [NSStringstringWithFormat:@&quot;&lt;%@: %p, \&quot;%@ %@ %@\&quot;&gt;&quot;,</span><br><span class="line">            [self class], self, _name,_age,_number];</span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>4. 尽量使用不可变对象</strong></p>
-<ul>
-<li>尽量创建不可变的对象</li>
-<li>如果某些属性仅用于对象内部修改，则在”class-continuation 分类”中将其由<code>readonly</code>属性拓展为<code>readwrite</code>属性。</li>
-<li>不要把可变的<code>collection</code>作为属性公开，而应该提供相关方法，以此修改对象中的可变<code>collection</code>。</li>
-</ul>
+        <ol>
+<li><p>阿里士多德的错误<br>阿里士多德的错误：如果你知道一个人知道什么，最好通过一个人去传递信息。”这种观点在实际的软件开发中并不适用。在复杂的软件项目中，信息传递需要跨越多个层级和不同的领域，单靠少数人的信息传递不仅效率低下，且容易造成误解和错误。<br>信息失真：在实际的开发过程中，信息会在多个层级和人员之间传递，而每次传递时都可能产生信息失真。开发人员、客户和管理人员之间的理解差异可能导致需求的误解、功能设计的偏差，以及项目进度的误估。</p>
+</li>
+<li><p>信息传递的复杂性<br>多方沟通的重要性：在软件开发项目中，不同团队成员之间的信息流动必须保持高效和清晰。尤其是团队成员之间需要频繁沟通，而不仅仅是“通过一个人传递信息”。多个团队成员之间的直接沟通、反馈和讨论可以减少信息失真和误解。<br>沟通的多样性：开发人员不仅要与其他开发人员沟通，还需要与测试人员、设计人员、客户、管理层等多个角色进行沟通。每一方的需求、期望和理解各不相同，开发人员需要能够有效地传递信息，并理解来自不同方的反馈。</p>
+</li>
+<li><p>沟通中的误区<br>过度依赖文档：虽然文档在沟通中扮演了重要角色，但如果过于依赖文档，也可能导致信息的失真。尤其是在需求变更频繁的情况下，文档往往无法及时更新，导致文档和实际需求之间的不一致。文档应该是动态的、与实际开发同步更新的，而不是简单的“备份”。<br>语言和术语的差异：软件开发中的术语常常具有多重含义，不同的人群（例如管理人员、开发人员、客户）可能对同一术语有不同的理解。在不同领域的人员之间进行沟通时，容易因为术语的误用或不清晰定义，导致沟通上的障碍。</p>
+</li>
+<li><p>沟通的层级性<br>不同层级的沟通需求：沟通在项目中的不同层级有不同的需求。比如，管理层通常关注项目的整体进度、预算和目标，而开发人员更关心技术细节和实现方案。有效的沟通不仅需要上下层级的互动，还需要跨团队、跨部门之间的信息流动。<br>沟通的渠道和机制：在项目中建立清晰的沟通机制十分重要。项目经理应当确保有适当的沟通渠道，便于各方及时共享信息和反馈，避免信息滞后或丢失。例如，定期的项目汇报会、需求评审会议、技术讨论会等都是有效的沟通渠道。</p>
+</li>
+<li><p>信息传递的技巧<br>积极的反馈机制：信息传递不仅仅是单向的，而应该是双向的。开发人员应主动寻求反馈，确保理解客户和其他团队成员的需求和期望。同时，客户和管理人员也应当及时反馈开发人员的进展，以确保双方的目标和理解一致。<br>简洁明了的表达：信息传递时需要简洁明了，避免复杂的语言和冗长的报告。复杂的报告和信息流通常导致混乱和误解，反而可能造成沟通上的障碍。清晰、简洁的表达有助于提高信息传递的效率。<br>非正式沟通：除了正式的会议和文档之外，非正式的沟通（如随时随地的讨论、快速的邮件或即时消息交流）同样重要，尤其是在开发过程中的快速决策和问题解决时，非正式沟通可以加快信息流动，避免不必要的延迟。</p>
+</li>
+<li><p>避免“我听你说你做”式的沟通<br>减少误解：项目管理中常见的“我听你说你做”的沟通模式是非常危险的。这种方式往往没有确保沟通双方的理解一致，导致信息的失真。为了避免这种问题，项目经理和开发人员应当确保沟通中双向确认和反馈的机制，确保每一方都完全理解对方的意思。<br>确保共同理解：沟通中的一个关键点是确保共同理解。不仅是传递信息，更要确保信息传递的双方（或多方）都能正确理解和使用这些信息。团队成员之间应通过问答、讨论等方式确保彼此理解一致，避免因误解导致的问题。</p>
+</li>
+<li><p>沟通中的心理障碍<br>信息过滤和屏蔽：在一些组织中，信息可能会被过滤或屏蔽，尤其是在多层级的组织结构中。信息的传递往往不是直接的，而是经过中介层级的过滤和转发。管理者和开发人员应当意识到信息流的障碍，并尽可能保持信息的开放性和透明度，避免层层过滤所带来的理解偏差。<br>忽视反馈：很多开发人员可能会忽视客户或其他团队成员的反馈，认为自己已经了解了需求或已经理解了问题。这样的偏见和自信常常会导致沟通不畅和项目失败。因此，开发人员应当保持开放的心态，积极倾听不同方的反馈，确保信息的准确传递。</p>
+</li>
+</ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/10/16/iOS%20%E6%8E%A5%E5%8F%A3%E4%B8%8EAPI%E8%AE%BE%E8%AE%A1/" data-id="cm4p65ael0000fncacdexhrd8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/09/10/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E5%85%AD%EF%BC%89/" data-id="cm4p9jy3l000dceca3hx27xkz" class="article-share-link">Share</a>
       
       
     </footer>
@@ -126,10 +116,10 @@
 
 
   
-    <article id="post-KVC" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-人月神话（十五）" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/09/11/KVC/" class="article-date">
-  <time datetime="2016-09-11T02:07:19.000Z" itemprop="datePublished">2016-09-11</time>
+    <a href="/2017/08/15/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%BA%94%EF%BC%89/" class="article-date">
+  <time datetime="2017-08-15T03:41:25.000Z" itemprop="datePublished">2017-08-15</time>
 </a>
     
   </div>
@@ -140,7 +130,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/09/11/KVC/">KVC</a>
+      <a class="article-title" href="/2017/08/15/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%BA%94%EF%BC%89/">人月神话（十五）</a>
     </h1>
   
 
@@ -148,70 +138,27 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p><strong>KVC 的概念</strong></p>
-<p><code>KVC（Key-Value Coding）</code>是<code>Objective-C</code>中的一个强大机制，它允许通过字符串键来访问对象的属性。这种机制使得代码更具灵活性，尤其是在一些动态属性访问场景中，比如在与集合类型的对象（如<code>NSArray</code>、<code>NSDictionary</code>）交互时，或者在实现数据绑定等高级功能时非常有用。</p>
-<p><code>KVC</code>的核心思想是通过键值对的方式来访问对象的属性，而不是直接通过<code>getter</code>和<code>setter</code>方法。</p>
-<p>KVC在运行时使用动态消息传递的方式来完成这些操作，因此它对代码的灵活性和扩展性非常重要。</p>
-<p>KVC常见的使用场景包括：</p>
-<ul>
-<li>动态修改对象的属性</li>
-<li>在集合中查找对象</li>
-<li>数据绑定</li>
-<li>在某些特殊场景中替代传统的getter&#x2F;setter方法</li>
-</ul>
-<p><strong>KVC 的工作原理</strong><br><code>KVC</code>通过<code>NSObject</code>类的方法提供属性的动态访问。KVC工作时，调用的是<code>setValue:forKey:</code>和<code>valueForKey:</code>这两个方法。</p>
-<ul>
-<li><code>valueForKey:</code>：获取某个键（属性）对应的值。</li>
-<li><code>setValue:forKey:</code>：设置某个键（属性）对应的值。</li>
-</ul>
-<p>这些方法会被动态地映射到相应的<code>getter</code>和<code>setter</code>方法，因此我们不需要显式地调用<code>setName:</code>或<code>name</code>这样的<code>getter</code>和<code>setter</code>，而是可以通过键来访问和设置属性值。</p>
-<p><strong>KVC 的基本使用</strong></p>
-<ol>
-<li><p>获取值（valueForKey:）<br>使用<code>valueForKey:</code>方法来访问对象的属性值。例如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NSString *name = [person valueForKey:@&quot;name&quot;];</span><br></pre></td></tr></table></figure>
-<p>这里的<code>name</code>是属性的键（通常是属性名）。<code>KVC</code>会根据键查找相应的<code>getter</code>方法，并返回值。</p>
+        <ol>
+<li><p>第二系统效应的定义<br>什么是第二系统效应？<br>第二系统效应是指开发人员在完成第一个系统后，通常会希望在第二个系统中引入更多的功能、复杂性和优化，以展示自己的技术能力和设计理念。尽管他们在第一个系统中积累了一定的经验，第二个系统却往往比第一个系统更加复杂，且有时会因为过度设计、过多的功能而变得更难维护。<br>过度设计的风险：<br>开发人员可能会在第二个系统中尝试实现他们在第一个系统中未能实现的所有想法，包括额外的功能、更复杂的架构等。这种过度设计和过度功能的增加往往会导致系统变得更难以开发和维护。</p>
 </li>
-<li><p>设置值（setValue:forKey:）<br>使用<code>setValue:forKey:</code>方法来修改对象的属性值。例如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[person setValue:@&quot;John&quot; forKey:@&quot;name&quot;];</span><br></pre></td></tr></table></figure>
-<p>这个方法会调用相应的<code>setter</code>方法来设置<code>name</code>属性。</p>
+<li><p>第一个系统与第二个系统的对比<br>第一个系统的简单性：<br>在开发第一个系统时，开发者通常会尽量避免过多的复杂性，系统可能更加简洁、直接。这个过程更多依赖于“生存本能”，开发人员更专注于实现核心功能和业务需求，不会引入太多不必要的特性。<br>第二个系统的过度复杂化：<br>完成第一个系统后，开发人员可能会受到“自我满足”的影响，产生一种要通过第二个系统来展示自己能力的心理。这会导致他们在设计时过于追求完美，或者对系统的每一个方面进行过度优化，最终导致系统复杂度过高，项目开发周期过长，且维护成本增加。</p>
 </li>
-<li><p>嵌套键路径<br><code>KVC</code>还支持嵌套键路径，允许你访问对象的嵌套属性。例如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NSString *city = [person valueForKeyPath:@&quot;address.city&quot;];</span><br></pre></td></tr></table></figure>
-<p>这里，<code>address</code>是一个<code>Person</code>对象的属性，而<code>city</code>是<code>address</code>属性的属性。<code>KVC</code>会自动递归地解析这个路径并返回对应的值。</p>
+<li><p>第二系统的常见问题<br>功能膨胀：<br>开发人员往往希望将更多的功能、技术栈、架构模式等融入到第二个系统中，带有“追求完美”的心理。这导致系统功能不断膨胀，超出原本的需求范围。<br>架构过于复杂：<br>在第二个系统的设计中，开发人员可能会试图设计更为复杂、全面的架构，假设所有的可能问题都能在设计阶段预见并解决。但往往这种“过度设计”无法适应实际的业务需求，且会增加后期的维护难度。<br>技术堆栈的选择：<br>第二系统可能会引入更多新的技术或框架，开发人员可能会受最新技术趋势的影响，试图将最新的技术应用于系统中。然而，这样做可能会带来不必要的学习曲线、集成难题，甚至不必要的风险。</p>
+</li>
+<li><p>解决第二系统效应的方法<br>保持简单：<br>面对第二个系统的开发，开发人员应始终保持简单的设计理念，避免过度设计和功能膨胀。系统设计应当专注于核心功能，避免“想做一切”的冲动。<br>关注可维护性：<br>尽管第二个系统可能在设计上需要更多的功能，维护性应该是设计中的重要考虑因素。功能的增加不应以牺牲可维护性和灵活性为代价。开发人员应当注重代码的模块化、可扩展性和测试性，避免在系统中增加无关的复杂性。<br>模块化设计：<br>模块化是减少复杂度的一种有效方式。尽管第二个系统可能涉及更复杂的需求，但也应该通过模块化的方式进行设计，将复杂的部分分解成独立的模块，以提高系统的可维护性和可扩展性。<br>阶段性迭代：<br>通过分阶段迭代和逐步开发，开发人员可以减少一次性投入过多复杂设计的风险。每次迭代都应关注实际的业务需求和技术问题，避免过早地做出完美的设计，允许系统在后续阶段逐步改进。</p>
+</li>
+<li><p>团队的心理因素<br>自信与过度设计的冲动：<br>开发人员在第一个系统中积累了经验，通常会感到更有信心，认为自己已经足够熟悉系统的复杂性，能应对更多挑战。然而，这种信心有时会导致过度设计，增加不必要的复杂性。<br>避免技术过度自信：<br>技术人员应保持谦逊，意识到每个新的设计和功能都会带来新的风险。在开发第二系统时，团队应该更加关注系统的实际需求而不是试图去实现所有“看起来很酷”的功能。</p>
+</li>
+<li><p>保持目标明确<br>聚焦核心目标：<br>第二系统的设计和开发应该始终以实现业务目标为导向，而不是为了展示技术能力或者实现“完美”设计。在设计过程中，要始终回归核心功能，避免无关的复杂性和过度的优化。</p>
+</li>
+<li><p>避免过度工程化<br>避免过度工程化的倾向：<br>过度工程化是第二系统效应的常见表现，指的是开发人员在系统设计中加入大量的额外功能、技术堆栈或设计模式，导致系统过于复杂和难以维护。开发者应当学会在技术选择和设计中做出权衡，保持系统的简洁性和清晰度。</p>
 </li>
 </ol>
-<p><strong>KVC 常见的操作</strong></p>
-<ol>
-<li><p>设置多个属性值（setValuesForKeysWithDictionary:）<br><code>KVC</code>允许你通过字典一次性设置多个属性值：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">NSDictionary *dict = @&#123;@&quot;name&quot;: @&quot;John&quot;, @&quot;age&quot;: @30&#125;;</span><br><span class="line">[person setValuesForKeysWithDictionary:dict];</span><br></pre></td></tr></table></figure>
-<p>这个方法会将字典中的键值对映射到对象的属性中。</p>
-</li>
-<li><p>键值验证（validateValue:forKey:）<br><code>KVC</code>允许你在设置值之前对值进行验证。你可以实现<code>validateValue:forKey:</code>方法来确保属性值的合法性。例如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (BOOL)validateName:(id *)ioValue error:(NSError **)outError &#123;</span><br><span class="line">    NSString *name = *ioValue;</span><br><span class="line">    if (name.length == 0) &#123;</span><br><span class="line">        if (outError) &#123;</span><br><span class="line">            *outError = [NSError errorWithDomain:@&quot;MyDomain&quot; code:100 userInfo:@&#123;NSLocalizedDescriptionKey: @&quot;Name cannot be empty&quot;&#125;];</span><br><span class="line">        &#125;</span><br><span class="line">        return NO;</span><br><span class="line">    &#125;</span><br><span class="line">    return YES;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这个方法在<code>setValue:forKey:</code>方法调用时会被触发，确保属性值的正确性。</p>
-</li>
-<li><p>访问数组和字典的元素<br><code>KVC</code>允许你使用键来访问数组和字典中的元素：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">NSArray *array = @[@&#123;@&quot;name&quot;: @&quot;John&quot;&#125;, @&#123;@&quot;name&quot;: @&quot;Alice&quot;&#125;];</span><br><span class="line">NSString *firstName = [array valueForKeyPath:@&quot;name[0]&quot;];  // 访问第一个元素的&#x27;name&#x27;</span><br></pre></td></tr></table></figure>
-<p>你可以使用类似于路径的语法来访问数组或字典中的元素。</p>
-</li>
-</ol>
-<p><strong>KVC的优势和不足</strong><br>优势：</p>
-<ul>
-<li>动态访问属性：不需要显式地调用<code>getter/setter</code>方法，可以通过键值的方式动态访问。</li>
-<li>简化代码：特别是在处理集合对象或复杂的嵌套对象时，<code>KVC</code>可以显著减少代码量。</li>
-<li>与集合类型兼容：<code>KVC</code>特别适用于<code>NSArray</code>、<code>NSDictionary</code>等集合类型，可以通过键动态访问集合中的元素或属性。</li>
-</ul>
-<p>不足：</p>
-<ul>
-<li>属性必须是<code>KVC</code>兼容的：<code>KVC</code>只能访问遵循<code>KVC</code>约定的属性。这意味着属性需要有对应的<code>getter</code>和<code>setter</code>方法。如果某个属性没有这些方法，<code>KVC</code>将无法访问。</li>
-<li>不适用于私有变量：<code>KVC</code>默认只操作公开的属性，无法直接访问私有实例变量。如果想要访问私有变量，可以通过<code>valueForKey:</code>来实现，但是需要手动为这些变量提供相应的<code>getter</code>和<code>setter</code>。</li>
-<li>动态类型限制：<code>KVC</code>通过动态消息传递机制实现属性的访问，所以如果你在访问过程中修改了对象的结构（比如在运行时移除或添加某些属性），<code>KVC</code>可能会导致不稳定的行为。</li>
-</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/09/11/KVC/" data-id="cm4p4n62l00007kca6oas4t38" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/08/15/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%BA%94%EF%BC%89/" data-id="cm4p9jy3k000bcecabdjbd19u" class="article-share-link">Share</a>
       
       
     </footer>
@@ -221,10 +168,10 @@
 
 
   
-    <article id="post-KVO" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-人月神话（十四）" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/08/07/KVO/" class="article-date">
-  <time datetime="2016-08-07T13:27:32.000Z" itemprop="datePublished">2016-08-07</time>
+    <a href="/2017/07/16/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E5%9B%9B%EF%BC%89/" class="article-date">
+  <time datetime="2017-07-16T12:54:12.000Z" itemprop="datePublished">2017-07-16</time>
 </a>
     
   </div>
@@ -235,7 +182,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/08/07/KVO/">KVO</a>
+      <a class="article-title" href="/2017/07/16/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E5%9B%9B%EF%BC%89/">人月神话（十四）</a>
     </h1>
   
 
@@ -243,94 +190,362 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p><strong>KVO 的概念</strong><br>KVO（Key-Value Observing）是 iOS 开发中一个强大的机制，允许对象观察其他对象的属性变化。在实现数据绑定、视图更新和响应数据变化时非常有用。</p>
-<p>KVO是一种基于观察者模式的机制，它允许对象观察某个属性的变化，并在变化时收到通知。被观察的属性必须是KVC（Key-Value Coding）兼容的，这意味着属性需要通过键值访问。<br><strong>KVO 的工作原理</strong><br>当你为一个对象的属性注册为观察者时，iOS底层会动态地生成一个对象的子类（通过Objective-C运行时），并重写属性的setter方法。这个setter方法会在属性发生变化时通知所有的观察者。</p>
-<p>观察者通过以下方法接收变化：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath </span><br><span class="line">                      ofObject:(id)object </span><br><span class="line">                        change:(NSDictionary&lt;NSKeyValueChangeKey, id&gt; *)change </span><br><span class="line">                       context:(void *)context;</span><br></pre></td></tr></table></figure>
-
-<p><strong>KVO 的使用步骤</strong></p>
-<ol>
-<li>添加观察者<br>使用addObserver:forKeyPath:options:context:方法为某个对象的属性添加观察者。例如：</li>
+        <ol>
+<li>人月神话的核心观点<br>增加人员并不会有效缩短已经滞后的项目时间。</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[self.person addObserver:self </span><br><span class="line">              forKeyPath:@&quot;name&quot; </span><br><span class="line">                 options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld </span><br><span class="line">                 context:nil];</span><br></pre></td></tr></table></figure>
-
-<p>参数说明：</p>
-<ul>
-<li>observer：观察者对象。</li>
-<li>keyPath：需要观察的属性路径。</li>
-<li>options：指定需要的变化信息（如新值、旧值等）。</li>
-<li>context：上下文指针，可以传递额外的信息。</li>
-</ul>
+<p>工作量与人员的关系：在软件项目中，工作量与人员的增加并非是简单的线性关系。增加开发人员可能带来额外的沟通和协调成本，从而降低整体的工作效率。<br>增加人员的副作用：特别是在项目滞后时，加入新成员会让项目的进展更为复杂，开发和管理的成本也会显著上升。尤其是新成员的加入需要时间来熟悉系统，学习已有的代码和设计，这不仅没有加速进度，反而拖慢了项目。</p>
 <ol start="2">
-<li>实现回调方法<br>当被观察属性的值变化时，observeValueForKeyPath:ofObject:change:context:方法会被调用：</li>
+<li><p>沟通成本的增加<br>沟通复杂度：随着团队规模的增加，团队成员之间的沟通量呈指数级增长。如果一个项目原本只有10个人，当你增加5个人时，你不仅需要为这些新增成员提供必要的培训和支持，还需要增加沟通和协调的成本。更大团队的成员之间必须进行更多的讨论和汇报，可能导致效率下降。<br>有效沟通的挑战：项目经理需要理解和管理团队内部的沟通网络。每个新增的团队成员都需要与其他成员交流，增加了交流的复杂性和错误的可能性。这是导致大团队效率低下的一个重要原因。</p>
+</li>
+<li><p>工作分配和并行化问题<br>任务的分解：不是所有的工作都可以被简单地分配给更多的开发人员，特别是在一个已经滞后的项目中。某些任务需要高度的集成和协作，增加人员的数量无法将这些任务有效地并行化。例如，代码开发中有些问题的解决需要单一的知识和技能，分配给过多的人反而可能导致分歧和重复工作，增加了开发的复杂性。<br>并行化的困难：某些工作本质上是无法并行化的，尤其是当项目需要集中精力解决复杂的技术问题或集成性问题时，增加人员反而可能使得这些问题变得更加复杂和难以管理。</p>
+</li>
+<li><p>生产力的递减<br>递减的边际生产力：随着开发团队人员的增加，生产力的提升会呈现递减趋势。早期的团队成员可能高效地推动项目进展，但随着团队规模的扩大，每个新成员的贡献所带来的生产力提升会逐渐减少，甚至变成负面的影响。<br>管理和协调问题：增加人员可能需要更多的管理资源和时间，原本由少数核心成员负责的任务和决策，现在需要更多的时间和精力来协调，导致开发进度的实际加速受到拖延。</p>
+</li>
+<li><p>项目失败的关键原因<br>管理不当：项目的失败并不一定是因为人力资源的不足，更多时候是由于管理不当。许多项目失败的真正原因是缺乏有效的管理、需求不清晰、沟通不畅等，而不是简单的人员不足。<br>时间预估和任务分配：在项目管理中，合理的时间估算、任务分配和持续的进度跟踪是至关重要的。很多时候，项目滞后是因为最初的计划过于乐观，或者对任务的估算不准确，导致了后期赶工和时间压力。</p>
+</li>
+<li><p>增加人员的适用情况<br>有限的例外情况：在某些情况下，增加人员可能是有用的。尤其是在一些任务可以较为容易地分配给新增的人员（例如，重复性的、标准化的任务），或者当某些人员需要休假或离开时，可以通过补充人员来保持项目进度。但这种情况是例外，不能作为常规的解决方案。<br>临时任务：如果项目中出现了紧急的临时任务，或者有些任务需要特定技能的补充，增加人员也是可以的，但这个方法不能作为解决滞后问题的常规方案。</p>
+</li>
+<li><p>最佳的应对策略<br>专注于提高现有团队的效率：与其增加人员，不如专注于提高现有团队的工作效率，解决开发中的问题。通过更好的沟通、优化现有流程和减少管理层次，可以大大提升团队的生产力。<br>持续评估和调整计划：项目经理需要在项目进展中持续评估项目的实际情况，及时调整计划，并避免对团队规模的盲目扩张。特别是在滞后时，最重要的是理解滞后的原因并采取正确的解决措施。</p>
+</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath </span><br><span class="line">                      ofObject:(id)object </span><br><span class="line">                        change:(NSDictionary&lt;NSKeyValueChangeKey, id&gt; *)change </span><br><span class="line">                       context:(void *)context &#123;</span><br><span class="line">    if ([keyPath isEqualToString:@&quot;name&quot;]) &#123;</span><br><span class="line">        NSLog(@&quot;旧值: %@, 新值: %@&quot;, change[NSKeyValueChangeOldKey], change[NSKeyValueChangeNewKey]);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/07/16/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E5%9B%9B%EF%BC%89/" data-id="cm4p9jy3m000ececacgjihcsy" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-人月神话（十三）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/06/11/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89/" class="article-date">
+  <time datetime="2017-06-11T13:38:51.000Z" itemprop="datePublished">2017-06-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/06/11/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89/">人月神话（十三）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ol>
+<li><p>不切实际的需求<br>需求膨胀：许多项目的失败往往源于不切实际的需求设定。随着项目的进行，客户或管理层可能会不断增加新需求，这种需求的膨胀往往没有经过合理的评估，导致项目超出原定范围（Scope Creep）。这种过度的需求增加不仅拖延开发进度，还可能导致资源紧张、预算超支。<br>需求管理：在项目开始前要对需求进行清晰的定义，并且在开发过程中必须对需求变更进行严格的管理。需求变更应当经过评审和合理的成本-效益分析，而不是轻易接受每个新增的功能。</p>
+</li>
+<li><p>计划不切实际<br>过度乐观的计划：许多项目的失败源于不切实际的计划，尤其是在时间和资源估算上。很多项目经理高估了团队的能力，低估了开发过程中的复杂性，从而导致项目进度的严重滞后。<br>现实的计划：项目经理应当采用更加保守和实际的计划，合理估算任务的工作量和团队的能力，并为项目的不可预见问题预留足够的缓冲时间。同时，项目应当定期审查和调整计划，以应对变化。</p>
+</li>
+<li><p>过度设计<br>“过度工程”：软件开发中常常会出现“过度设计”的问题。开发人员和设计师可能会试图实现非常复杂、完美的系统设计，但这种过度的设计并不会带来实际的业务价值，反而会增加开发时间和维护成本。<br>简化设计：为了避免过度设计，在设计阶段应当追求“简单而有效”的设计原则。系统设计应当满足当前需求，并具备灵活性以适应未来的扩展，但不需要预先设计所有可能的复杂功能。</p>
+</li>
+<li><p>缺乏沟通<br>沟通不畅的后果：缺乏有效沟通是许多软件项目失败的根本原因之一。开发团队、客户、管理层以及其他相关人员之间的信息往往不对称，导致需求不清晰、目标不一致，甚至最终交付的软件与客户需求不符。<br>沟通策略：为了解决沟通问题，应建立明确的沟通机制，包括定期会议、项目报告和反馈机制。此外，文档化的非常重要，特别是在大型项目中，详细的技术文档和需求文档可以避免误解和沟通失误。</p>
+</li>
+<li><p>错误的人员配置<br>错误的人员选择和团队结构：项目经理有时会因为人力资源的分配不当，导致项目进度延迟。例如，过于依赖某个关键人员，或者团队中缺乏经验和技能的成员，都会影响项目的进展。<br>适当的团队配置：团队的人员配置应当根据项目的需求来调整。项目经理应确保团队中有合适的技能组合，并为关键角色选派经验丰富的人才。同时，团队成员之间应当有明确的角色和责任，避免责任重叠或空缺。</p>
+</li>
+<li><p>团队过大<br>团队规模过大带来的问题：过大的团队会导致沟通和协作的成本急剧增加。随着团队人数的增加，成员之间的协调、信息流通和管理工作会变得极为复杂，反而会降低整体效率。<br>小团队的优势：小型、精简的团队通常更加高效，能够更灵活地应对变化。对于大型项目，可以将团队分拆成多个小团队，每个小团队负责一个模块或子系统，这样既能保持效率，又能保证项目的可控性。</p>
+</li>
+<li><p>管理者缺乏专业知识<br>管理层缺乏技术知识：项目的管理层如果缺乏对技术的理解和经验，就很难做出正确的决策，甚至可能会做出损害项目进度和质量的错误决策。<br>技术与管理的结合：优秀的项目经理不仅要具备管理能力，还应对技术有一定的了解。只有这样，管理者才能准确评估项目的实际进度，合理分配资源，并与开发团队有效沟通。</p>
+</li>
+<li><p>忽视测试和维护<br>测试和维护的不足：很多项目在开发阶段会忽视足够的测试和后期维护计划。由于急于交付产品，开发团队可能会在测试阶段压缩时间，导致系统中存在大量bug，进而影响系统的质量和稳定性。<br>注重质量保障：为了避免这一问题，项目应当从一开始就重视测试，确保在整个开发过程中有足够的时间进行全面的测试。特别是对复杂系统，应当考虑到长期维护和迭代更新的需求。</p>
+</li>
+<li><p>未充分考虑风险<br>项目中的风险管理：许多项目失败是由于管理层忽视了项目中的潜在风险，例如技术不可行、人员流动、需求变化等。项目经理应当在项目初期就进行全面的风险评估，并为可能发生的风险制定应对策略。<br>风险评估和管理：项目经理应定期检查项目的风险状况，及时调整计划，并采取措施减少风险的影响。团队应当具备应急预案和灵活的应变能力。</p>
+</li>
+<li><p>忽视项目的动态性<br>项目的不确定性和变化：项目的进展并不是一成不变的，很多时候，项目需求、技术方案甚至团队组成都会发生变化。如果管理者无法及时适应这些变化，项目就可能会陷入困境。<br>适应性管理：优秀的项目经理应当具备适应性和灵活性，在项目进展过程中根据实际情况进行调整，以确保项目能够按照预定目标顺利进行。</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/06/11/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89/" data-id="cm4p9jy3j000acecaena9dye2" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-人月神话（十二）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/05/27/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%BA%8C%EF%BC%89/" class="article-date">
+  <time datetime="2017-05-27T08:29:33.000Z" itemprop="datePublished">2017-05-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/05/27/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%BA%8C%EF%BC%89/">人月神话（十二）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ol>
+<li><p>没有“银弹”<br>软件开发的复杂性：软件开发的最大难题不是缺乏技术或工具，而是软件系统本身的复杂性。每个软件项目都涉及大量的需求变更、技术选择、人员协作等因素，这些因素本身就决定了开发的复杂性。没有任何一种“银弹”能够解决这些问题。<br>“银弹”误区：很多人误认为，只要有了某种革命性的技术或方法，就能够大大简化软件开发过程，缩短开发时间，或者极大地提高生产力。软件开发的困难根本不在于技术层面的工具，而在于系统本身的复杂性、不断变化的需求以及团队之间的协作问题。</p>
+</li>
+<li><p>技术进步的局限性<br>软件工程的固有困难：尽管软件工程的工具和技术在不断进步（例如，编程语言、集成开发环境、自动化测试工具等），这些进步确实能够在某些方面提高生产力和效率，但它们并不能从根本上解决软件开发中的复杂性问题。例如，尽管面向对象编程、分布式系统、敏捷开发等方法可能在一定条件下提供帮助，但它们并不是“银弹”，不能无所不能地解决软件开发中的所有问题。<br>复杂性的本质：软件开发中的复杂性来源于许多因素，如需求变化、客户期望、技术实现的不可预见性等。无论技术如何进步，这些固有的复杂性依然存在。</p>
+</li>
+<li><p>人类因素<br>沟通和协作的挑战：开发人员之间的沟通和协作是软件开发中非常重要的一部分。在软件开发过程中，团队成员必须紧密合作，共同解决复杂的问题。然而，这种协作本身也带来了额外的挑战，比如误解、信息不对称、冲突等问题。这种人与人之间的互动问题是软件开发中难以消除的一个核心难题。<br>开发人员的专业技能：另一个人类因素是开发人员的技能和经验。虽然可以通过培训和工具来提高开发者的效率，但软件开发仍然是一项高度依赖人类创造力和判断力的工作，因此没有任何技术可以完全替代开发人员的判断和决策。</p>
+</li>
+<li><p>需求的变动<br>需求的不确定性：软件开发的另一个难点在于需求的变化。软件项目通常从客户或用户那里得到的需求并不是静态的，而是会随着时间变化而不断调整和修改。这种需求的变动使得软件开发过程充满不确定性和不可预见性，即便是最先进的技术和最完善的工具，也无法完全消除这种不确定性。<br>需求变动的影响：需求的变动不仅影响项目的开发进度，还可能导致系统设计的重大调整。项目经理和开发团队必须灵活应对需求的变化，并保持与客户的良好沟通，确保最终交付的软件满足客户的实际需求。</p>
+</li>
+<li><p>软件开发的“人月神话”<br>人月神话：“增加人员不能减少开发时间”。当项目进度滞后时，很多人会认为只要增加更多的开发人员，就能加快开发速度。但实际上，增加人员会带来额外的沟通和协调成本，反而可能导致项目的进展更加缓慢。项目的成功与否不仅取决于人员数量，还取决于如何管理团队、如何分配任务以及如何解决项目中的复杂问题。<br>团队的协作与协调：团队内部的协作与协调才是项目成功的关键。优秀的团队管理、清晰的沟通和高效的协作比增加人员数量更为重要。</p>
+</li>
+<li><p>人类的认知限制<br>人类认知的局限性：人类的认知能力是有限的，尤其是在面对复杂系统时，我们往往无法完全理解和预测所有细节。这种认知限制使得软件开发尤其复杂，开发人员和项目经理必须承认这一点，并采取策略来应对不可预见的复杂性。<br>模块化设计：为了应对人类认知的局限性，采用模块化设计，将复杂系统分解为多个相对独立、易于理解的模块。通过模块化，开发人员可以在更小的范围内处理复杂问题，从而减少系统的复杂度，并提高可维护性和扩展性。</p>
+</li>
+<li><p>缓解复杂性的方式<br>提高抽象层次：一种有效的应对软件复杂性的方法是提高抽象层次。通过更高层次的抽象，开发人员可以更好地管理复杂的系统。抽象可以帮助开发者从系统的细节中解脱出来，专注于更宏观的结构和设计。面向对象的编程和模块化设计正是帮助开发人员管理复杂性的工具。<br>合适的工具和技术：尽管没有“银弹”，但合适的工具和技术可以在一定程度上减轻开发中的复杂性。例如，自动化测试工具、版本控制系统、集成开发环境等，能够提高开发效率，减少错误，改善协作。但这些工具只能改善开发过程中的某些方面，而无法消除整体的复杂性。</p>
+</li>
+<li><p>面向未来的展望<br>未来的进展：尽管没有一种单一的技术能够彻底改变软件开发的现状，但随着工具、方法论和团队管理经验的不断改进，软件开发会逐步变得更加高效和可控。他相信，通过不断的技术创新和经验积累，开发者能够在长期内克服软件开发中的复杂性，但这将是一个渐进的过程。<br>理性期望：不应抱有通过某种“银弹”技术迅速解决所有问题的幻想，而应理性看待软件开发中的困难和挑战，并通过持续的改进、适当的工具和高效的团队管理来应对这些挑战。</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/05/27/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%BA%8C%EF%BC%89/" data-id="cm4p9jy3l000cceca50x9e8xq" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-人月神话（十一）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/05/01/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%B8%80%EF%BC%89/" class="article-date">
+  <time datetime="2017-05-01T12:19:21.000Z" itemprop="datePublished">2017-05-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/05/01/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%B8%80%EF%BC%89/">人月神话（十一）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ol>
+<li><p>规划要从任务开始<br>任务优先于时间估算：计划一个项目时，不应一开始就直接从时间安排入手，而应从任务的内容出发。通过详细分解每项任务，明确每个任务的工作量和所需资源，才能对整个项目的时间做出合理的估算。许多项目失败的原因是低估了任务的复杂性，而不是时间管理本身的问题。<br>任务分解：为了保证计划的准确性，项目经理应当把整个项目分解成若干个小任务。通过逐一分析这些小任务的工作量和复杂度，可以得到更为清晰的时间框架。</p>
+</li>
+<li><p>以人的能力来估算项目的工作量<br>估算工作量时考虑开发者的能力差异：项目的工作量不仅仅取决于任务的数量，还与开发人员的技能、经验和工作效率密切相关。团队成员之间的能力差异会显著影响项目的进度，因此，在估算工作量时，需要考虑到开发人员的实际水平和能力。<br>避免简单地将工作量与人力资源成正比：即简单地通过增加更多开发人员来缩短项目周期往往是不可行的。更多的人员并不意味着更短的开发周期，反而可能因为沟通和协调成本的增加而导致项目进度放慢。</p>
+</li>
+<li><p>采用渐进式开发，逐步迭代<br>迭代开发：软件开发应该是渐进式和迭代的过程，而非一次性完成的工作。通过逐步交付软件的各个版本，每次迭代后都进行测试和优化，团队可以及时发现并解决问题。渐进式开发不仅能提高开发效率，还能增加项目的可控性。<br>原型开发：在项目的早期阶段，可以通过开发原型来帮助团队和客户更好地理解需求和技术可行性，从而降低开发中的风险。</p>
+</li>
+<li><p>不可避免的计划滞后<br>不可预见的延迟：几乎所有的大型软件项目都会经历计划的滞后。即使经过了详细的规划和充分的资源配置，项目仍然可能由于各种不可预测的因素（如技术难题、人员变动、需求变化等）出现延迟。因此，项目经理应该为计划中的滞后留有充足的缓冲时间，并保持灵活性来应对突发情况。<br>灵活应对变化：在软件开发过程中，需求变化是常见的现象。项目经理需要有应对变化的能力，在项目进展过程中根据实际情况进行调整，而不是固守初步的计划。</p>
+</li>
+<li><p>避免”对称”设计<br>不要过度设计：过度设计是大型项目失败的一个常见原因。开发人员有时倾向于设计复杂、精美、完美的系统，但这往往带来不必要的复杂性和工程成本。在系统设计时，应避免对称的、过于复杂的设计方案，选择更加简单和实际的方案。<br>模块化设计：通过将系统分解为多个独立的模块，可以降低设计的复杂性，也使得开发和测试过程更加灵活和高效。</p>
+</li>
+<li><p>不应事事求完美<br>追求合适的平衡：不应将精力花费在追求完美的代码或设计上，而是应该实现“足够好”的解决方案。在一些情况下，完美主义反而会影响开发效率和进度。尤其是在面对复杂和庞大的项目时，持续的改进比追求完美更加重要。<br>适应需求变化：随着项目的进展，需求和优先级可能会发生变化。因此，开发人员和团队应当根据实际情况灵活调整，不必执着于某一时刻的“最佳”设计。</p>
+</li>
+<li><p>沟通是团队成功的关键<br>沟通的重要性：团队内部的沟通是软件项目成功的关键。随着团队规模的扩大，沟通的复杂度也成倍增加。如果沟通不畅，可能导致项目中断、错误和误解。因此，项目经理应该确保团队成员之间有明确的沟通渠道，并且能够及时共享信息。<br>减少沟通障碍：沟通的障碍往往来源于层级结构、团队成员的疏远、文化差异等因素。因此，减少沟通障碍，提高团队成员之间的协作和理解，是提升团队效率的关键。</p>
+</li>
+<li><p>失败不可避免，但可以管理<br>面对失败的态度：软件项目不可避免地会遇到失败和挑战，但项目经理可以采取有效的管理策略来应对这些问题。在项目管理中，最重要的并不是避免所有问题，而是能够及时发现问题并加以解决。<br>早期发现问题：通过定期的项目评审、测试和反馈，项目经理可以及早发现潜在问题，并采取措施进行调整。这不仅能降低项目的风险，还能增加成功的可能性。</p>
+</li>
+<li><p>人员的稳定性非常重要<br>人员变动的风险：项目中人员的频繁变动可能对项目的进度和质量产生负面影响。团队成员的离职和更替会导致知识的流失，影响团队的协作效率和项目的连续性。因此，项目经理应尽量减少团队成员的流动，并对新加入的成员进行充分的培训和支持。<br>人员管理策略：为了提高团队的稳定性，项目经理应当关注团队成员的职业发展和满意度，确保他们能够在项目中看到自己的价值和成长机会。</p>
+</li>
+<li><p>软件开发是一个长时间的过程<br>长期性与持续性：软件开发不应当被视为短期的活动，而是一个长期持续的过程。特别是在大型项目中，开发周期可能非常长，团队成员可能会经历多个版本的开发和维护。项目经理需要在长期规划中预见到这些挑战，并做好长期的资源调配和风险管理。<br>持续改进：软件开发是一个不断迭代、不断改进的过程。布鲁克斯强调，开发团队应当保持持续改进的心态，并随着项目的推进，不断优化设计和技术方案。</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/05/01/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%B8%80%EF%BC%89/" data-id="cm4p9jy3j0009cecae8kchvki" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-人月神话（十）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/04/16/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%EF%BC%89/" class="article-date">
+  <time datetime="2017-04-16T11:41:03.000Z" itemprop="datePublished">2017-04-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/04/16/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%EF%BC%89/">人月神话（十）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ol>
+<li><p>扩展的难度：<br>从小到大的挑战：从一个小型项目扩展到大型项目并不像增加人员数量那么简单，扩展过程会带来一系列新的挑战，特别是管理、沟通和协调方面的问题。尽管在项目初期，团队较小，沟通和决策效率较高，但随着项目规模的扩大，团队的沟通复杂性和管理难度也会大幅增加。<br>规模的非线性增长：项目规模的扩展并不是线性的。项目规模的增长通常会使沟通和管理的复杂度呈指数级上升。例如，团队人数从10人增加到20人，虽然是数量的简单翻倍，但沟通和管理的成本远非如此简单的倍数关系，可能增加几倍甚至十几倍。</p>
+</li>
+<li><p>增加人员的陷阱：<br>“人月神话”：即使团队规模不断增加，也不一定意味着项目能在预定时间内按时完成。增加新成员并不能有效缩短开发周期，反而可能因为学习曲线、沟通成本等问题，导致项目延期。特别是在软件开发中，增加人员的初期成本和培训时间往往被低估。<br>新成员的成本：新成员不仅需要时间来熟悉项目，还会对现有成员的工作造成干扰，增加沟通和协作的成本。因此，项目经理需要非常谨慎地考虑是否以及何时增加新成员。</p>
+</li>
+<li><p>保持小团队的优势：<br>分拆大型项目：为了保持高效，大型项目应当通过拆分成多个小型团队来进行管理。每个小团队可以独立负责一个模块或功能，团队成员之间保持较为紧密的联系。通过这种方式，管理层可以避免项目规模过大导致的沟通和管理混乱问题。<br>模块化设计：通过模块化设计，可以将一个庞大的系统拆分为多个独立的模块，每个模块可以由独立的团队负责。模块之间通过标准化接口进行交互，从而减少模块之间的依赖和冲突。</p>
+</li>
+<li><p>增加规模时的管理结构调整：<br>管理层次的调整：随着项目规模的增加，团队的管理结构也应当进行调整。虽然小型项目中可能采用扁平化的管理结构，但随着项目规模的扩大，可能需要引入更多的管理层次。但这些层次不应过于复杂，仍然要保持简洁和高效。<br>领导力与决策权的分配：在更大的项目中，领导力和决策权的分配至关重要。项目经理应当授权给小组领导者一定的决策权，而不是事事亲力亲为。通过这种方式，项目经理可以腾出更多的时间来关注项目的整体进展和解决重大问题。</p>
+</li>
+<li><p>时间与质量的平衡：<br>避免时间压力过大：在大型项目中，时间通常是一个重要的限制因素。在时间压力过大的情况下，团队可能会做出妥协，降低软件质量。因此，项目经理需要在时间、预算和质量之间找到平衡点，确保软件能够按时交付的同时，保持足够的质量标准。<br>控制预期：大型项目容易遭遇预期管理的问题，客户和团队成员可能会对项目的进度和功能产生不切实际的预期。因此，项目经理需要对外界的预期进行管理，并确保客户和团队在项目的各个阶段有清晰和现实的目标。</p>
+</li>
+<li><p>逐步推进与灵活调整：<br>渐进式开发：大型项目应该采用渐进式开发的方法，逐步推进项目的实施，首先交付最小可行版本（MVP），然后逐步扩展功能。这种方式有助于团队快速发现问题并进行调整，避免项目在开发后期出现重大缺陷。<br>灵活应变：项目在扩展过程中可能会遇到各种不确定性，管理者需要保持灵活性，及时调整项目计划和资源分配，以应对新的挑战和变化。</p>
+</li>
+<li><p>风险管理：<br>风险评估与管理：在大型项目中，风险管理是一个关键因素。随着项目规模的扩大，可能会出现各种各样的技术、人员、资源和市场风险。因此，项目经理需要进行全面的风险评估，并为潜在的风险制定应急预案。<br>定期审查：项目经理应该定期审查项目的风险状况，并根据项目的实际进展进行调整。如果风险超出了预期，项目经理应采取措施进行控制，防止风险蔓延到项目的其他部分。</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/04/16/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%EF%BC%89/" data-id="cm4p9jy3n000fceca9yhb85i9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-人月神话（九）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/04/01/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E4%B9%9D%EF%BC%89/" class="article-date">
+  <time datetime="2017-03-31T16:18:41.000Z" itemprop="datePublished">2017-04-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/04/01/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E4%B9%9D%EF%BC%89/">人月神话（九）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ol>
+<li><p>大型项目的复杂性：<br>规模问题：随着项目规模的增加，管理的复杂度呈指数级增长。大型项目涉及更多的人员、技术和任务，这使得项目管理变得更加困难，尤其是在沟通和协调方面。<br>管理难度：在大型项目中，团队成员的数量庞大，任务的分配更加复杂。虽然项目人员增多看似可以提高工作效率，但实际上，这会导致管理上的挑战，尤其是在项目的初期阶段。</p>
+</li>
+<li><p>分割大型项目：<br>模块化管理：将大型项目拆分成多个小型模块，每个模块由一个独立的小团队负责。通过模块化设计，每个小团队可以专注于自己负责的部分，减少跨团队的协调和沟通负担。这样，尽管项目规模很大，但可以保持一定的灵活性和高效性。<br>清晰的接口设计：为了确保不同模块之间的协作顺畅，每个模块之间的接口设计应当明确且稳定。模块间的接口应当足够清晰，以减少因接口不明确而产生的沟通和实现问题。</p>
+</li>
+<li><p>项目经理的角色：<br>项目经理的职责：在大型项目中，项目经理不仅要管理团队成员的日常工作，还需要进行任务分配、资源调配和进度控制。项目经理要有足够的领导力和远见，能够对项目的整体方向和每个模块的进展进行有效监控。<br>协调与沟通：项目经理的一个重要角色是协调各个小团队之间的工作，确保不同模块之间能够顺利衔接。有效的沟通和协调是保证大型项目顺利进行的关键。</p>
+</li>
+<li><p>沟通的挑战：<br>信息过载：在大型项目中，沟通的量和频率极大增加。过多的沟通往往会导致信息过载，使得团队成员很难集中精力处理核心任务。为了避免这种情况，项目经理应当确保沟通的精简和高效，减少无效信息的传递。<br>信息传递失真：随着团队成员的增多，信息在传递过程中容易失真。在大型项目中，信息的传递应该尽可能直接和透明，避免信息在层级之间传递时出现误解或延迟。</p>
+</li>
+<li><p>进度与质量管理：<br>进度控制：在大型项目中，保持项目进度的稳定性是一个巨大的挑战。项目经理应定期评估进度，并根据实际情况调整资源和任务分配。虽然项目的初步计划很重要，但灵活性和应变能力同样重要。<br>质量保证：随着项目的复杂性增加，确保软件质量变得尤为困难。质量管理应当从项目的早期阶段开始，采用适当的测试、评审和质量控制机制，以确保最终交付的软件满足预期的质量标准。</p>
+</li>
+<li><p>人员的管理与配置：<br>人员的挑战：项目中的人员管理是最大的挑战之一。在大型项目中，由于人员众多，难免会出现成员之间的冲突、角色不清和责任推诿等问题。为了应对这些挑战，项目经理需要清晰地定义每个成员的职责和任务，并确保团队成员之间保持良好的沟通和协作。<br>人员变动的影响：大型项目中的人员流动往往比较频繁，这可能会导致团队成员对项目的理解和熟悉程度不足，进而影响项目的进展。为了避免这种情况，项目经理应定期进行人员培训，并保持一定的人员稳定性。</p>
+</li>
+<li><p>如何避免“金字塔”型组织结构：<br>扁平化管理：传统的大型项目管理模式中层级过多的“金字塔”结构，认为这种结构不仅增加了管理成本，还导致了信息流动的缓慢。在大型项目中，应该尽量保持扁平化的管理结构，减少层级，确保信息可以迅速传递。<br>小组式工作：为了提高效率和减少管理层级的负担，在大型项目中实施小组式工作模式，将项目分解成多个相对独立的工作小组。每个小组有自己的任务和目标，可以自主完成相关工作，只有在需要协作时才进行信息交换。</p>
+</li>
+<li><p>避免过度设计与过度工程：<br>简单性优先：尽管大型项目可能涉及复杂的技术设计和工程实现，但开发过程中应当避免过度设计和过度工程。过于复杂的设计会导致开发和维护成本大幅上升，同时也会增加项目的风险。<br>逐步推进：在大型项目中，应该采用逐步推进的方式，先开发出最小可用版本（MVP），然后逐步扩展功能。这种方式能够帮助团队更早地发现问题并进行调整，避免在开发过程中陷入不必要的复杂度。</p>
+</li>
+<li><p>应对不确定性：<br>不确定性的管理：大型项目通常会面临很多不确定性，包括技术难题、市场变化以及人员问题等。项目经理要保持灵活性，及时调整计划，应对这些不确定性。<br>预期风险和管理风险：在管理大型项目时，项目经理应当预见到可能出现的风险，并制定应急预案。通过风险评估和管理，降低项目失败的可能性。</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/04/01/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E4%B9%9D%EF%BC%89/" data-id="cm4p9jy3g0007ceca0qdqdydv" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-人月神话（八）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/03/12/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%85%AB%EF%BC%89/" class="article-date">
+  <time datetime="2017-03-12T13:25:54.000Z" itemprop="datePublished">2017-03-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/03/12/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%85%AB%EF%BC%89/">人月神话（八）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ol>
+<li><p>小团队的灵活性与高效性：<br>沟通成本低：小型团队在沟通方面具有天然优势。随着团队成员数量的增加，沟通的复杂度呈指数增长，团队成员之间需要传递和接收更多的信息，这会导致沟通效率下降。而在小型团队中，成员之间的直接沟通更加高效，信息流通更加顺畅，减少了误解和信息丢失的风险。<br>决策迅速：小团队的决策过程比大团队更快速，因为每个团队成员的参与度较高，讨论和决策不需要经过多个管理层次。在面对问题时，小团队能够迅速达成共识并付诸行动，避免了大团队中可能出现的决策迟缓和拖延。</p>
+</li>
+<li><p>管理的简洁性：</p>
+</li>
+</ol>
+<ul>
+<li>层级少，管理成本低：小团队通常不需要复杂的管理层次。过多的管理层级不仅增加了管理成本，还可能导致信息在层级之间传递时发生失真。而小型团队可以通过扁平化的结构保持更直接、有效的沟通。<br>避免过度控制：小型团队的成员通常可以更自主地工作，管理者无需对每一个细节进行过度干预，这种自由度往往能激发成员的创造力和责任感，从而提高工作效率和质量。</li>
+<li>灵活的任务分配与调整：<br>任务快速调整：小型团队通常在任务分配和调整方面更加灵活。当项目需求发生变化时，管理者可以快速调整任务和资源分配，使得团队能够迅速响应新需求。在大团队中，调整任务通常需要更多的层级审批和资源重新配置，导致响应速度慢。</li>
+<li>多人兼任角色：在小型团队中，成员通常可以承担多种角色，而不仅仅局限于特定的职能。这种灵活性使得团队能够在人员短缺时，依然保持生产力。</li>
+</ul>
 <ol start="3">
-<li>移除观察者<br>在不需要观察时，记得移除观察者，避免内存泄漏或崩溃：</li>
+<li><p>小团队的挑战：<br>人力资源限制：尽管小团队有很多优势，但它也面临人力资源有限的挑战。在团队成员能力上，可能会因为人员数量少而出现技术领域的空白，或者某些特定技能的短缺。在这种情况下，团队可以通过外部资源或合作来弥补技术不足，或者通过培训和提升团队成员的技能来应对挑战。<br>管理者的负担：小团队的管理者通常需要承担更多的责任和工作，特别是在项目管理、团队协调等方面。因此，管理者的能力和精力是团队是否能够成功的关键。</p>
+</li>
+<li><p>小团队的管理经验与战略：<br>鼓励创新和多样性：在小团队中，成员往往能够更加自由地交流思想和技术。管理者应鼓励团队成员提出新颖的想法，尝试不同的技术和方法，避免在工作中陷入常规和僵化的状态。<br>明确目标和沟通：尽管小团队在沟通上有天然的优势，团队成员之间仍然需要有明确的目标和沟通渠道，以确保每个成员都清楚自己的角色和任务。</p>
+</li>
+<li><p>小团队在大项目中的作用：<br>分割大型项目：在大型软件项目中，虽然最终可能需要更多的团队和人员，但应该通过将大项目拆分为多个小团队来进行管理。每个小团队负责一个独立的模块或功能，多个小团队之间通过清晰的接口进行协作。通过这种方式，可以避免大团队中常见的管理难题，保持高效的工作流程。<br>模块化设计：项目的设计应该尽可能模块化，这样可以在保持团队独立性的同时，也能确保不同团队之间的协作更加顺畅。小团队负责特定的模块，模块之间通过标准的接口进行连接。</p>
+</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[self.person removeObserver:self forKeyPath:@&quot;name&quot;];</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>常见KVO选项</li>
-</ol>
-<ul>
-<li><code>NSKeyValueObservingOptionNew：</code> 回调中包含新值。</li>
-<li><code>NSKeyValueObservingOptionOld：</code> 回调中包含旧值。</li>
-<li><code>NSKeyValueObservingOptionInitial：</code> 立即收到初始值的通知。</li>
-<li><code>NSKeyValueObservingOptionPrior：</code> 在值变化前后都会收到通知。</li>
-</ul>
-<p><strong>注意事项和最佳实践</strong></p>
-<ol>
-<li>移除观察者</li>
-</ol>
-<ul>
-<li>在对象释放之前，必须移除所有观察者，否则会导致崩溃。</li>
-<li>在<code>dealloc</code>中确保移除所有观察者。</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (void)dealloc &#123;</span><br><span class="line">    [self.person removeObserver:self forKeyPath:@&quot;name&quot;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>避免重复添加观察者</li>
-</ol>
-<ul>
-<li>重复添加观察者会导致多次回调，容易引发bug。</li>
-</ul>
-<ol start="3">
-<li>线程安全</li>
-</ol>
-<ul>
-<li>如果被观察的属性在多线程环境下被修改，可能会导致不一致或崩溃。可以使用同步锁或<code>@synchronized</code>确保线程安全。</li>
-</ul>
-<ol start="4">
-<li>只能观察KVC兼容属性</li>
-</ol>
-<ul>
-<li>直接使用<code>@property</code>声明的属性是<code>KVC</code>兼容的，动态添加的变量（如ivar）不支持<code>KVO</code>。</li>
-</ul>
-<ol start="5">
-<li>使用上下文来区分观察者</li>
-</ol>
-<ul>
-<li>如果同一个类中观察了多个属性，可以使用<code>context</code>参数区分不同的观察。</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">static void *NameContext = &amp;NameContext;</span><br><span class="line"></span><br><span class="line">[self.person addObserver:self forKeyPath:@&quot;name&quot; options:... context:NameContext];</span><br></pre></td></tr></table></figure>
-<p>在回调中检查上下文：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (context == NameContext) &#123;</span><br><span class="line">    // 处理 name 的变化</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ol start="6">
-<li>KVO的局限性</li>
-</ol>
-<ul>
-<li>容易出错：忘记移除观察者可能导致崩溃。</li>
-<li>调试困难：错误可能隐藏在底层动态生成的代码中。</li>
-<li>性能问题：KVO在观察大量属性时可能导致性能下降。</li>
-<li>代码复杂性：对复杂属性依赖的观察管理不便。</li>
-</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/08/07/KVO/" data-id="cm4p2kc2t0000wocaawe0c26n" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/03/12/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%85%AB%EF%BC%89/" data-id="cm4p9jy3g0006ceca76bcekfi" class="article-share-link">Share</a>
       
       
     </footer>
@@ -340,10 +555,10 @@
 
 
   
-    <article id="post-RunLoop" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-人月神话（七）" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/07/06/RunLoop/" class="article-date">
-  <time datetime="2016-07-06T06:18:56.000Z" itemprop="datePublished">2016-07-06</time>
+    <a href="/2017/03/04/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E4%B8%83%EF%BC%89/" class="article-date">
+  <time datetime="2017-03-04T02:49:51.000Z" itemprop="datePublished">2017-03-04</time>
 </a>
     
   </div>
@@ -354,7 +569,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/07/06/RunLoop/">RunLoop</a>
+      <a class="article-title" href="/2017/03/04/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E4%B8%83%EF%BC%89/">人月神话（七）</a>
     </h1>
   
 
@@ -362,421 +577,27 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p><strong>RunLoop 的概念</strong><br>一般来讲，一个线程一次只能执行一个任务，执行完之后线程就会退出。如果我们需要一个机制，让线程能随时处理事件但并不退出，就需要一个 RunLoop 对象。</p>
-<p>实现这种模型的关键带你在于：如果管理事件&#x2F;消息，如何让线程在没有处理消息时休眠以避免资源占用、在有消息到来时立刻被唤醒。</p>
-<p>所以，RunLoop 实际上就是一个对象，这个对象管理了其需要处理的事件和消息，并提供了一个入口函数来执行上面 Event Loop 的逻辑。线程执行了这个函数后，就会一直处于这个函数内部“接受消息-&gt;等待-&gt;处理”的循环中，直到这个循环结束（比如传入 quit 的消息），函数返回。</p>
-<p><strong>RunLoop 与线程的关系</strong><br>首先，iOS 开发中能遇到两个线程对象：pthread_t 和 NSThread。苹果不允许直接创建  RunLoop，它只是提供了两个自动获取的函数：<code>CFRunLoopGetMain()</code>和<code>CFRunLoopGetCurrent()</code>。这两个函数内部的逻辑大概是这样的：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">// 全局的 Dictionary，key 是 pthread_t，value 是 CFRunLoopRef</span><br><span class="line">static CFMutableDictionaryRef loopsDic;</span><br><span class="line">// 访问 loopsDic 时的锁</span><br><span class="line">static CFSpinLock_t loopsLock;</span><br><span class="line">// 获取一个 pthread 对应的 RunLoop</span><br><span class="line">CFRunLoopRef _CFRunLoopGet(pthread_t thread)&#123;</span><br><span class="line">	OSSpinLockLock(&amp;loopsLock);</span><br><span class="line">	</span><br><span class="line">	if(!loopsLook) &#123;</span><br><span class="line">		// 第一次进入时，初始化全局 Dic，并先为主线程创建一个  RunLoop。</span><br><span class="line">		loopsDic = CFDictionaryCreateMutable();</span><br><span class="line">		CFRunLoopRef mainLoop = _CFRunLoopCreate();</span><br><span class="line">		CFDictionarySetValue(loopsDic, pthread_main_thread_np(), mianLoop);</span><br><span class="line">	&#125;</span><br><span class="line">	// 直接从 Dictionary 里获取。</span><br><span class="line">	CFRunLoopRef loop = CFDictionaryGetValue(loopsDic, thread);</span><br><span class="line">	if (!loop) &#123;</span><br><span class="line">		// 取不到时，创建一个</span><br><span class="line">		loop = _CFRunLoopCreate();</span><br><span class="line">		CFDictionarySetValue(loopsDic, thread, loop);</span><br><span class="line">		// 注册一个回调，当线程销毁时，顺便也销毁其对应的 RunLoop</span><br><span class="line">		_CFSetTSD(..., thread, loop, __CFFinalizeRunLoop);</span><br><span class="line">	&#125;</span><br><span class="line">	OSSpinLockUnLock(&amp;loopsLock);</span><br><span class="line">	return loop;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>从上面的代码可以看出，线程和 RunLoop 之间是一一对应的，其关系是保存再一个全局的 Dictionary 里。线程刚创建时并没有 RunLoop，如果你不主动获取，那它一直都不会有。RunLoop 的创建是发生在第一次获取时，RunLoop 的销毁是发生在线程结束时。你只能在一个线程的内部获取其 RunLoop（主线程除外）。</p>
-<p><strong>RunLoop 对外的接口</strong><br>在 CoreFoundation 里面关于 RunLoop 有5个类：</p>
-<ul>
-<li>CFRunLoopRef</li>
-<li>CFRunLoopModeRef</li>
-<li>CFRunLoopSourceRef</li>
-<li>CFRunLoopTimerRef</li>
-<li>CFRunLoopObserverRef</li>
-</ul>
-<p>其中 CFRunLoopModeRef 类并没有对外暴露，只是通过 CFRunLoopRef 的接口进行了封装。他们的关系如下：<br><img src="https://blog.ibireme.com/wp-content/uploads/2015/05/RunLoop_0.png"></p>
-<p>一个 RunLoop 包含若干个 Mode，每个 Mode 又包含若干个 Source&#x2F;Timer&#x2F;Observer。每次调用 RunLoop的主函数时，只能指定其中一个 Mode，这个 Mode 被称作 CurrentMode。如果需要切换 Mode，只能退出 Loop，再重新指定一个 Mode 进入。这样做主要是为了分隔开不同组的 Source&#x2F;Timer&#x2F;Observer，让其互不影响。</p>
-<p>CFRunLoopSourceRef 是事件产生的地方。Source 有两个版本：Source0和 source1.</p>
-<ul>
-<li>Source0 只包含了一个回调(函数指针)，它并不能主动触发事件。使用时，你需要先调用 CFRunLoopSourceSignal(source)，将这个 Source 标记为待处理，然后手动调用 CFRunLoopWakeUp(runloop)来唤醒 RunLoop，让其处理这个事件。</li>
-<li>Source1 包含了一个 mach_port 和一个回调（函数指针），被用于通过内核和其他线程相互发送消息。这种 Source 能主动唤醒 RunLoop 的线程，其原理在下面会讲到。</li>
-</ul>
-<p>CFRunLoopTimerRef 是基于时间的触发器，它和 NSTimer 是 toll-free bridged 的，可以混用。其包含一个时间长度和一个回调（函数指针）。当其加入到 RunLoop 时，RunLoop 会注册对应的时间点，当时间点到时，RunLoop 会被唤醒以执行那个回调。</p>
-<p>CFRunLoopObserverRef 是观察者，每个 Observer 都包含了一个回调（函数指针），当 RunLoop 的状态发生变化时，观察者就能通过回调接收到这个变化。可以管着的时间点有以下几个：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">typedef CF_OPTIONS(CFOptionFlags, CFRunLoopActivity) &#123;</span><br><span class="line">    kCFRunLoopEntry         = (1UL &lt;&lt; 0), // 即将进入Loop</span><br><span class="line">    kCFRunLoopBeforeTimers  = (1UL &lt;&lt; 1), // 即将处理 Timer</span><br><span class="line">    kCFRunLoopBeforeSources = (1UL &lt;&lt; 2), // 即将处理 Source</span><br><span class="line">    kCFRunLoopBeforeWaiting = (1UL &lt;&lt; 5), // 即将进入休眠</span><br><span class="line">    kCFRunLoopAfterWaiting  = (1UL &lt;&lt; 6), // 刚从休眠中唤醒</span><br><span class="line">    kCFRunLoopExit          = (1UL &lt;&lt; 7), // 即将退出Loop</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>上面的 Source&#x2F;Timer&#x2F;Observer 被统称为 mode item，一个 item 可以被同时加入多个 mode。但一个 item 被重复加入同一个 mode 时是不会有效果的。如果一个 mode 中一个 item 都没有，则 RunLoop 会直接退出，不进入循环。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/07/06/RunLoop/" data-id="cm4p02l8v0004xdca919f5hlg" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Objective-C-之消息" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/" class="article-date">
-  <time datetime="2016-06-03T02:15:16.000Z" itemprop="datePublished">2016-06-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/">Objective-C 之消息机制</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h4 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h4><p>初学 Objective-C 时， 不觉得 <code>[object doSomething]</code> 与 <code>doSomething()</code> 有什么不一样，最多是写法看起来奇葩一点。随着了解的深入，渐渐觉得 Runtime 黑魔法简直不要太好用。</p>
-<p>有任何不对的地方，还望大家批评指正。</p>
-<h4 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h4><p>调用对象的方法，是再日常不过的操作。其他语言叫做方法调用，在 Objective-C 中叫做“消息传递”。消息有“名称”(name)或“选择子”(selector)，可以接受参数，也可能有返回值。</p>
-<p>非动态语言在编译时期就能决定运行时应该调用的函数，而“动态绑定”是在运行期来决定到底该调用哪个方法，这样我们就可以在程序运行时改变其真实调用的方法，这些特性使得 Objective-C 成为一门真正的动态语言。</p>
-<p>我们先来了解一下基本概念：</p>
-<p><strong>SEL</strong>: 定义表示方法选择器的不透明类型。方法选择器用于表示运行时方法的名称。方法选择器是已使用Objective-C运行时注册（或“映射”）的C字符串。加载类时，编译器生成的选择器将由运行时自动映射。</p>
-<p>可以这么理解，Objective-C 在编译时，会依据每一个方法的名字、参数序列，生成一个唯一的编号，他的行为基本可以等同 C 语言中的函数指针，但 Objective-C 不能直接使用函数指针，只能通过<code>@selector</code>来取。<br>下面代码可能更清楚:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SEL sel = @selector(method);</span><br></pre></td></tr></table></figure>
-
-<p>其实 SEL 的与类无关，只要方法名相同，SEL 就是一样的。<br>A 类</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@implementation ClassA</span><br><span class="line"></span><br><span class="line">- (void)print</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;打印 A&quot;);</span><br><span class="line">    SEL selA = @selector(print);</span><br><span class="line">    NSLog(@&quot;%p&quot;,selA);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
-<p>B 类</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@implementation ClassB</span><br><span class="line"></span><br><span class="line">- (void)print</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;打印 B&quot;);</span><br><span class="line">    SEL selB = @selector(print);</span><br><span class="line">    NSLog(@&quot;%p&quot;,selB);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
-<p>控制器中</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ClassA *classA = [ClassA new];</span><br><span class="line">SEL selA = @selector(print);</span><br><span class="line">[classA print];</span><br><span class="line">ClassB *classB = [ClassB new];</span><br><span class="line">SEL selB = @selector(print);</span><br><span class="line">[classB print];</span><br><span class="line">NSLog(@&quot;%p-----%p&quot;,selA, selB);</span><br></pre></td></tr></table></figure>
-<p>打印结果如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">打印 A</span><br><span class="line">0x10d8ceade</span><br><span class="line">打印 B</span><br><span class="line">0x10d8ceade</span><br><span class="line">0x10d8ceade-----0x10d8ceade</span><br></pre></td></tr></table></figure>
-<p>所以在 Objective-C 中，同一个类不能存在2个同名方法，即使参数类型不同也不行，没有方法重载一说。</p>
-<p><strong>IMP</strong>:指向方法实现开始的指针。其定义如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id (*IMP)(id, SEL, ...)</span><br></pre></td></tr></table></figure>
-<p>此数据类型是指向实现该方法的函数的开头的指针。此函数使用为当前CPU体系结构实现的标准C调用约定。第一个参数是指向<code>self</code>的指针（即，此类的特定实例的内存，或者，对于类方法，指向元类的指针）。第二个参数是方法选择器。方法参数接在后面。</p>
-<p>前面介绍的<code>SEL</code>就是为了查找方法的最终实现<code>IMP</code>的。每个方法对应唯一的<code>SEL</code>，因此通过<code>SEL</code>可以快速准确地获得其所对应的<code>IMP</code>。拿到了 <code>IMP</code>就可以执行对应的方法了。</p>
-<p><strong>Method</strong>:表示类定义中的方法。其定义如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_method *Method;</span><br><span class="line"></span><br><span class="line">struct objc_method &#123;</span><br><span class="line">		SEL method_name;</span><br><span class="line">		char *method_types;</span><br><span class="line">		IMP method_imp;</span><br><span class="line">	&#125; method_list[1];		/* variable length structure */</span><br></pre></td></tr></table></figure>
-<p>方法的结构体中包含了一个<code>SEL</code>和<code>IMP</code>，实际上相当于把 <code>SEL</code> 和 <code>IMP</code> 建立了一个映射关系，对应起来了。</p>
-<p>在 Objective-C 中，给对象发送消息：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ClassA *classA = [ClassA new];</span><br><span class="line">[classA print];</span><br></pre></td></tr></table></figure>
-<p>等同于：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void objc_msgSend(classA, print);</span><br></pre></td></tr></table></figure>
-<p>其原型是：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id objc_msgSend(id self, SEL cmd, ...)</span><br></pre></td></tr></table></figure>
-
-<p><code>classA</code> 叫做“接收者”(receiver), <code>print</code> 叫做“选择子”(selector)。<br><code>objc_msgSend</code> 函数会依据 <code>self</code>和<code>SEL</code>来调用适当的方法。</p>
-<p>具体操作如下：</p>
-<p>先在接收者所属的类中搜寻其“方法列表”(list of methods)，如果能找到与选择子名称相符的方法，就跳至其实现代码。若是找不到，那就站着继承体系继续向上查找，等找到合适的方法之后再跳转。如果最终还是找不到相符的方法，那就执行“消息转发”(message forwarding)操作。</p>
-<h5 id="消息转发"><a href="#消息转发" class="headerlink" title="消息转发"></a>消息转发</h5><p>由于 Objective-C 的动态性，编译时期不能确定某类是否能执行某个方法(运行期可以向类中添加方法)。</p>
-<p>消息转发分为两大阶段。第一阶段先征询接收者所属的类，看其是否能动态添加方法，已处理当前这个“未知的选择子”，这叫做“动态方法解析”(dynamic method resolution)。第二个阶段设计“完整的消息转发机制”。如果运行期系统已经把第一阶段执行完了，那么接收者自己就无法再以动态新增方法的手段来响应包含该选择子的消息了。此时，运行期系统会请求接收者以其他手段来处理与消息相关的方法调用。这又分为两小步：首先，请接收者看看有没有其它对象能处理这条消息。若有，则运行期系统会把消息转给那个对象，于是消息转发过程结束，一切如常。若没有，则启动完整的消息转发机制，运行期系统会把与消息有关的全部细节都封装到 <code>NSInvocation</code>对象中，再给接收者最后一次机会，令其设法解决当前还未处理的这条消息。</p>
-<p><strong>动态方法解析</strong><br>对象在收到无法解读的消息后，首先将调用其所遇类的下列类方法：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">+ (BOOL)resolveInstanceMethod:(SEL)selector</span><br></pre></td></tr></table></figure>
-<p>该方法的参数就是那个未知的选择子，其返回值为<code>Boolean</code>类型，表示这个类是否能新增一个实例方法用以处理此选择子。在继续往下执行转发机制之前，本类有机会新增一个处理此选择子的方法。如果尚未实现的方法是类方法，那么就会使用</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">+ (BOOL)resolveClassMethod:(SEL)selector</span><br></pre></td></tr></table></figure>
-<p>使用这种办法的前提是：相关方法的实现代码已经写好，只等着运行的时候动态插在类中就可以了。此方法常用来实现<code>@dynamic 属性</code>。</p>
-<p><strong>备援接收者</strong><br>当前接收者还有第二次机会能处理未知的选择子，在这一步中，运行期系统会问它：能不能把这条消息转给其他接收者来处理。与该步骤对应的处理方法如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (id)forwardingTargetForSelector:(SEL)selector</span><br></pre></td></tr></table></figure>
-<p>方法参数代表未知的选择子，若当前接收者能找到备援对象，则将其返回，若找不到，就返回 nil。通过此方法，我们可以用“组合”(composition)来模拟出“多重继承”(multiple inheritance)的某些特性。注意，我们无法操作经由这一步所转发的消息。若是想在发送给备援接收者之前先修改消息内容，那就得通过完整的消息转发机制来做了。</p>
-<p><strong>完整的消息转发</strong><br>如果转发算法已经来到这一步的话，那么唯一能做的就是启用完整的消息转发机制了。首先创建<code>NSInvocation</code>对象，把与尚未处理的那条消息有关的全部细节都封于其中。词对象包含选择子、目标(target)及参数。在触发<code>NSInvocation</code>对象时，“消息派发系统”(message-dispatch system)将亲自出马，把消息指派给目标对象。<br>此步骤会调用下列方法来转发消息：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)forwardInvocation:(NSInvocation*)invocation</span><br></pre></td></tr></table></figure>
-<p>这个方法可以实现得很简单：只需改变调用目标，使消息在新目标上得以调用即可。然而这样实现出来的方法与“备援接收者”方案所实现的方法等效，所以很少有人采用这么简单的实现方式。比较有用的实现方式为：在触发消息前，先以某种方式改变消息内容，比如追加另外一个参数，或是改换选择子，等等。<br>实现此方法时，若发现某调用操作不应该由本类处理，则需要调用超类的同名方法。这样的话，继承体系中的每个类都有机会处理此调用请求，直到<code>NSObject</code>。如果最后调用了 NSObject 类的方法，那么该方法还会继而调用<code>doesNotRecognizeSelector:</code>以抛出异常，此异常表名选择子最终最能得到处理。</p>
-<h4 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h4><p><a href="https://developer.apple.com/documentation/objectivec/">Apple Documentation</a><br><a href="https://opensource.apple.com/tarballs/objc4/">Source Browser</a><br><a href="http://southpeak.github.io/2014/11/03/objective-c-runtime-3/">Objective-C Runtime 运行时之三：方法与消息</a><br><a href="http://limite.me/blog/2015/01/07/objective-czhong-de-selectorhe-sel/">Objective-C中的Selector和SEL</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/" data-id="cm4p02l8u0002xdcacyq05aw2" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Objective-C-声明变量的两种常见方式" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/05/06/Objective-C-%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F/" class="article-date">
-  <time datetime="2016-05-06T04:11:21.000Z" itemprop="datePublished">2016-05-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/05/06/Objective-C-%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F/">Objective-C 声明变量的两种常见方式</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h4 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h4><p>昨天突然想起前同事问过的一个问题</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	NSString *_aString;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>和</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic, copy) NSString *aString;</span><br></pre></td></tr></table></figure>
-<p>这两种写法有什么区别？<br>正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。</p>
-<h4 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h4><p>声明在<code>&#123;&#125;</code>中的，叫做成员变量；而用 <code>@property</code>修饰的，顾名思义叫做属性。</p>
-<p>先说区别：</p>
-<ul>
-<li><p>在’{}’中声明的成员变量，级别是<code>protected</code>的。简单来说就是子类和当前类可以使用这个成员变量，其他类不可以。而用‘@property’声明的变量,级别是<code>public</code>，可以在当前类或者其他类中被访问。</p>
+        <ol>
+<li><p>工具的重要性：<br>工具决定效率：良好的工具能够极大提高开发效率，减少重复劳动，使得程序员可以更加专注于核心功能的设计和开发。反之，缺乏合适的工具会使得开发工作变得繁琐、低效，甚至容易出错。<br>工具的作用：有效的开发工具不仅能提升代码编写的效率，还能帮助团队更好地管理项目、进行测试、进行调试、生成文档等。随着软件项目规模的扩大，工具的作用显得尤为重要。</p>
 </li>
-<li><p>在’{}’中声明成员变量，使用变量名进行访问；‘@property’声明的变量，使用_变量名(在变量名前加一个下划线),或者self.变量名进行访问。</p>
+<li><p>通用工具的缺乏：<br>缺少适用的工具：虽然在早期阶段，程序员可能可以依赖自己编写一些小工具来解决问题，但随着项目的规模增长，现成的通用工具显得十分必要。在那时，许多工具往往没有被很好地设计和推广，导致程序员需要花费大量时间去编写或定制工具，甚至不得不手工处理大量的重复工作。<br>自定义工具的高成本：尽管某些项目可能会自行开发工具来满足特定需求，但自定义工具的维护成本通常很高。一旦工具设计不当，或者需要在新项目中使用时，维护这些工具可能会成为负担。如果工具可以通用且成熟，那么开发者的工作会更加顺利和高效。</p>
 </li>
-<li><p>在’{}’中声明成员变量，直接访问保存实例变量的那块内存，没有调用 set&#x2F;get 方法，不走“方法派发”(method dispatch)，所以要更快。</p>
+<li><p>标准化与规范化的工具需求：<br>统一的开发工具：很多时候，开发人员缺乏一个统一的开发环境或工具链，这使得每个程序员都在自己的小环境中独立工作，导致工具之间的兼容性差，增加了开发成本。对于大规模项目，应该有一套统一的工具标准，使得所有开发人员都能在同一平台上高效协作。<br>工具的通用性：对于团队和企业来说，拥有能够满足不同开发需求的通用工具是非常重要的。开发中经常出现的工具不适用或需要手动干预的问题。这些问题虽然在项目早期可能不显现，但随着项目的成长，工具的局限性会变得越来越明显。</p>
 </li>
-<li><p>在’{}’中声明成员变量，不走 set 方法，自然就没有一堆属性特质，那也就绕过了内存管理语义。</p>
+<li><p>工具选择的策略：<br>选择合适的工具：在选择开发工具时，要考虑到工具的通用性和适应性，而不是单纯根据某个特定需求去开发专用工具。一个好的工具应该能够适应多种场景，具有较高的通用性和扩展性。<br>不依赖于单一工具：开发工具的选择不应过于依赖某一种特定工具或技术。应该有多个备用的工具，以应对不同的开发需求和技术变化。这也能避免项目被某个单一工具绑架的情况。</p>
 </li>
-<li><p>在’{}’中声明成员变量，不会触发 KVO(Key-Value Observing)。</p>
+<li><p>自动化工具的缺失：<br>自动化的缺失：很多开发工作中的重复性任务，应该通过自动化工具来减少手工操作。例如，构建、编译、测试和部署等工作应该能够自动化，而不是依赖人工完成。缺乏自动化工具意味着开发人员花费大量时间在这些琐碎任务上，降低了整体开发效率。<br>构建自动化工具：对于大型项目，自动化构建工具尤其重要。手动构建和测试不仅容易出错，还会浪费大量时间。通过构建自动化工具，程序员可以更加专注于解决核心的技术问题，而非浪费时间在基础设施的搭建上。</p>
 </li>
-</ul>
-<p>其实，对于写 Java 或者 C++的同学来说，在’{}’中声明成员变量这种写法再正常不过，而 Objective-C 代码通常不这样写。因为这种写法：</p>
-<blockquote>
-<p>对象布局在编译期(compile time)就已经固定了。</p>
-</blockquote>
-<p>眼神好的同学应该注意到“编译期”这三个字。想想看，Objective-C 的一项重要特性——运行时。在某个类中动态添加属性是不是很高级？</p>
-<blockquote>
-<p>只要碰到访问 _aString 变量的代码，编译器就把其替换为“偏移量”(offset)，这个偏移量是“硬编码”(hardcode)，表示该变量存放对象的内存区域的其实地址有多远。这样做看起来没什么问题，但是如果又加了一个实例变量，那就麻烦了。</p>
-</blockquote>
-<p>当然，这个问题苹果工程师已经解决了，他们的做法是把实例变量当做一种存储偏移量所用的“特殊变量”(special variable)，交由“类对象”(class object)保管。偏移量会在运行期查找，如果类的定义变了，那么存储的偏移量也就变了，无论何时访问实例变量，总能使用正确的偏移量。</p>
-<p>而另一个解决方案就是使用‘@property’。其实</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic) NSString *aString;</span><br></pre></td></tr></table></figure>
-<p>相当于</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	NSString *_aString;</span><br><span class="line">&#125;</span><br><span class="line">- (NSString *)aString;</span><br><span class="line">- (void)setAString:(NSString *)aString;</span><br></pre></td></tr></table></figure>
-
-<p>想要访问属性，可以使用 _aString 或者 self.aString。写 Java 的同学又开心了，因为这个”.属性名”和 Java 的中写看起来一样。其实，在 Objective-C 中，没有”点语法”，这是编译器搞出来的。在使用  self.aString 时，编译器会将其转换为对应的存取方法调用。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AObject *aObject = [AObject new];</span><br><span class="line">aObject.aString = @&quot;一堆文字&quot;;</span><br><span class="line">NSLog(@&quot;%@&quot;,aObject.aString);  // 打印结果我不写</span><br></pre></td></tr></table></figure>
-<p>相当于</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AObject *aObject = [AObject new];</span><br><span class="line">[aObject setAString:@&quot;一堆文字&quot;];</span><br><span class="line">NSLog(@&quot;%@&quot;,[aObject aString]);</span><br></pre></td></tr></table></figure>
-<p>如果<code>@property</code>只有这点作用，存在的意义就不大了。所以，属性特质就出现了。(因果逻辑 doge)</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic, readwrite, copy) NSString *aString;</span><br></pre></td></tr></table></figure>
-
-<p>说到属性特质，我们可以又扯到 Objective-C 的内存管理去，所以我们下次再聊。</p>
-<h4 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h4><ul>
-<li>Effective+Objective-C+2.0++编写高质量iOS与OS+X代码的52个有效方法</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/05/06/Objective-C-%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F/" data-id="cm4p02l8u0003xdca40cu1poa" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Objective-C Runtime 之 Class" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/04/15/Objective-C%20Runtime%20%E4%B9%8B%20Class/" class="article-date">
-  <time datetime="2016-04-15T03:11:21.000Z" itemprop="datePublished">2016-04-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/04/15/Objective-C%20Runtime%20%E4%B9%8B%20Class/">Objective-C Runtime 之 Class</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h4 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h4><p>与 C 等面向过程的语言不同，用 Objective-C 、C++ 等面向对象语言编程时，<strong>“对象”(object)<strong>就是“基本构造单元”，开发者使用对象来传递、存储数据。在对象之间传递数据并执行操作的过程叫做</strong>消息传递</strong>或者<strong>方法调用</strong>。</p>
-<p>Objective-C 是 C 的超集。所有 C 的代码都可以直接放在 Objective-C 程序里经过编译。而且 Objective-C 的 OOP 就是使用 C 结构体模拟的。</p>
-<p>既然说到了 OO 编程，那就先聊聊 Objective-C 中的类吧，源码在<a href="https://opensource.apple.com/tarballs/objc4/">这里</a>可以看到。</p>
-<p>有任何不对的地方，还望大家批评指正。</p>
-<h4 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h4><p><code>Class</code> 是一个指向 <code>objc_class</code>结构体的指针：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_class *Class;</span><br></pre></td></tr></table></figure>
-<p><code>objc_class</code>结构体的定义如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class &#123;</span><br><span class="line">	struct objc_class *isa;	</span><br><span class="line">	struct objc_class *super_class;	</span><br><span class="line">	const char *name;		</span><br><span class="line">	long version;</span><br><span class="line">	long info;</span><br><span class="line">	long instance_size;</span><br><span class="line">	struct objc_ivar_list *ivars;</span><br><span class="line"></span><br><span class="line">#if defined(Release3CompatibilityBuild)</span><br><span class="line">	struct objc_method_list *methods;</span><br><span class="line">#else</span><br><span class="line">	struct objc_method_list **methodLists;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">	struct objc_cache *cache;</span><br><span class="line"> 	struct objc_protocol_list *protocols;</span><br><span class="line">#endif</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>下面依次了解一下各成员变量的意义：</p>
-<p><code>isa</code>: 大名鼎鼎的 isa 指针，相信面试中大多数人都遇到过这个问题，说说什么 isa<br>描述 Objective-C 对象所用的数据结构在 runtime.h 中可以看到，id 类型本身也定义在这里：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_object &#123;</span><br><span class="line">	Class isa;</span><br><span class="line">&#125;  *id;</span><br></pre></td></tr></table></figure>
-<p>其实顾名思义，is a ，该变量定义了对象所属的类，该对象属于哪个类，isa 就指向那个类，<img src="https://raw.githubusercontent.com/WiInputMethod/interview/master/img/ios-runtime-class.png" alt="这张图片"><br>这张图早已说明了一切：<br>类中的 super_class 指针用来追溯整个继承链。isa 指针找到其所属的类。</p>
-<p><code>super_class</code>: 指向该类的父类，如果该类已是根类，则为 NULL<br><code>name</code>: 类名<br><code>version</code>: 版本信息<br><code>info</code>: 类信息<br><code>instance_size</code>: 实例大小<br><code>ivars</code>: 成员变量地址列表，还记得之前说过的声明成员变量的两种常见方式么，里面提到把成员变量当做一种储存偏移量的特殊变量，交由类对象保管。就保管在这里呢<br><code>methodLists</code>: 方法列表。<br><code>cache</code>: 方法缓存。<br><code>protocols</code>: 协议列表。</p>
-<h5 id="元类-Meta-Class"><a href="#元类-Meta-Class" class="headerlink" title="元类(Meta Class)"></a>元类(Meta Class)</h5><p>所有的类自身也是一个对象。元类存储着一个类的所有类方法。元类也是一个类，它的<code>isa</code>指针，指向基类的元类，基类的元类的<code>isa</code>指针指向它自己，这就形成了一个闭环。</p>
-<h4 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h4><ul>
-<li><a href="http://chachatelier.fr/programmation/fichiers/cpp-objc-en.pdf">From C++ to Objective-C</a></li>
-<li><a href="http://southpeak.github.io/2014/10/25/objective-c-runtime-1/">Objective-C Runtime 运行时之一：类与对象</a></li>
-<li><a href="http://yulingtianxia.com/blog/2014/11/05/objective-c-runtime/#Class">Objective-C Runtime</a></li>
-<li>《Effective+Objective-C+2.0++编写高质量iOS与OS+X代码的52个有效方法》</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/04/15/Objective-C%20Runtime%20%E4%B9%8B%20Class/" data-id="cm4p02l8r0001xdcag3ag7tj2" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-iOS的内存管理" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/03/08/iOS%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="article-date">
-  <time datetime="2016-03-08T10:26:29.000Z" itemprop="datePublished">2016-03-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/08/iOS%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">Objective-C 的内存管理</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h4 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h4><p>iOS 内存管理相关的内容其实已经一大堆了，为了加强理解，写了这篇读书笔记。有任何不对的地方，还望大家批评指正。</p>
-<h4 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h4><h5 id="C-语言内存模型"><a href="#C-语言内存模型" class="headerlink" title="C 语言内存模型"></a>C 语言内存模型</h5><p>说 Objective-C 的内存管理之前，可以了解一下 C 的内存模型</p>
-<p>内存分区有哪些？<br>栈、全局(静态)区、堆、字符串常量区</p>
-<ul>
-<li><p>栈(stack):C语言函数内部变量包括局部变量和形式参数等。在进入函数的时候自动分配，在离开函数时自动清除的变量存储区。</p>
+<li><p>工具的开发与维护：<br>工具的设计与维护成本：虽然工具可以提高开发效率，但工具的开发和维护本身也需要成本。开发一个合适的工具和维护它的生命周期，可能会消耗掉大量的资源，因此在设计工具时要考虑到它的长期使用和维护的可行性。<br>工具与开发过程的紧密结合：有效的工具应当与开发过程紧密结合，而不是单纯的外部工具。工具的设计应该与团队的工作流程和项目的需求紧密结合，以提高其使用效率。</p>
 </li>
-<li><p>全局&#x2F;静态区(global&#x2F;static):存放全局变量和静态变量的存储区。全局变量也称为外部变量，它是在函数外部定义的变量。全局变量是所有函数的公用变量，整个程序中任何一个函数都可以任意地调用它。静态变量和全局变量被分配到同一块内存中，静态局部变量只限于在定义处的函数使用，但是离开函数后数值一直保留，直到程序退出。</p>
+<li><p>避免“为工具而开发工具”：<br>工具的过度设计：布鲁克斯警告，工具的开发不应过度设计，避免陷入“为工具而开发工具”的陷阱。工具的目的是帮助开发，而不是成为负担。工具的功能要与实际需求相符合，设计过于复杂的工具可能会带来更多的问题，反而影响开发效率。</p>
 </li>
-<li><p>堆(heap):由调用malloc函数分配的内存块，一般每一次malloc函数分配的内存块，最后都要对应调用一次free函数释放这个内存块。如果程序员没有释放掉，那么在程序结束后，操作系统会自动释放。</p>
-</li>
-<li><p>常量储存区:就是存放程序内所有字符串常量的内存区域，这个内存区域上存储的内容不允许修改，直到程序退出为止。</p>
-</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">int a = 0;  // 全局</span><br><span class="line">char *p;    // 全局</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    </span><br><span class="line">    int b;  // 栈</span><br><span class="line">    char s[] = &quot;abc&quot;;   // 栈</span><br><span class="line">    char *p1;   // 栈</span><br><span class="line">    char *p2 = &quot;123456&quot;;    // 123456/0在常量区，p2在栈上</span><br><span class="line">    static int c = 0;   // 全局</span><br><span class="line">    p = (char *)malloc(10);    // 堆</span><br><span class="line">    p1 = (char *)malloc(20);    // 堆</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>区别:</strong></p>
-<ol>
-<li>栈由系统自动分配，不用担心释放问题；堆需要程序员自己申请，那就需要程序员来释放。</li>
-<li>栈由系统自动分配，速度就比较快；堆是<code>new</code>或者<code>malloc</code>出来，一般速度比较慢，而且容易产生内存碎片（话说 OC 中的<code>allocWithZone:</code>中这个’zone’，貌似就是减少碎片产生的存在）。</li>
-<li>栈是一块连续的内存区域，内存大小比较小；堆是不连续的，比较大。</li>
 </ol>
-<h5 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h5><p>先来说说垃圾回收机制。如上所说，虽然栈中内存会自动释放，但堆中的已分配内存需要我们自己来释放。自己来管理内存的话，释放时机的把握就很重要了。如果释放早了，还有其他地方在使用这块内存中的对象，那就形成了垂悬指针。或者本来这块内存中的对象已经没地方用了，你又没释放，本来就很着急的内存空间，怕是要溢出了。所以，垃圾回收机制就是解决这个问题的。</p>
-<p>传统算法：</p>
-<ul>
-<li>引用计数(Reference Counting)算法</li>
-<li>标记-清除(Mark-Sweep)算法</li>
-<li>复制(Copying)算法</li>
-</ul>
-<p>标记-清除算法：简单来说，就是轮询所有对象，把被引用的对象标记起来，轮询结束后就清除所有没有被标记的对象。</p>
-<p>复制算法：把堆空间分成A、B两份，每次只使用其中之一。假设先使用 A 区域，当系统认为需要回收垃圾时，把所有正在被使用的对象复制到 B 区域。然后清空 A。到下一次需要收集时，再在 B 中正在被使用的对象复制到 A，然后清空 B。</p>
-<p>Objective-C 中的内存管理用的就是引用计数：每次有对象被引用，那么对象的引用计数就+1，当你不再引用这个对象时，就告诉对象，让他引用计数-1。当引用计数为0时，就释放该对象。</p>
-<p>有这样一个口诀：</p>
-<ul>
-<li>自己生成的对象，自己持有</li>
-<li>非自己生成的对象，自己也能持有。</li>
-<li>不再需要自己持有的对象时释放。</li>
-<li>非自己持有的对象无法释放。</li>
-</ul>
-<h5 id="内存管理的具体实现"><a href="#内存管理的具体实现" class="headerlink" title="内存管理的具体实现"></a>内存管理的具体实现</h5><p>以一个对象的生成、持有、释放、销毁为一个完整的生命周期来探讨苹果的实现。<br>通过 GNUstep 源码中的 <a href="https://github.com/gnustep/libs-base/blob/master/Source/NSObject.m">NSObject</a> 类来学习。</p>
-<p><strong>生成</strong><br>首先，看<code>alloc</code>方法。这是一个类方法。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">+ (id) alloc</span><br><span class="line">&#123;</span><br><span class="line">  return [self allocWithZone: NSDefaultMallocZone()];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (id) allocWithZone: (NSZone*)z</span><br><span class="line">&#123;</span><br><span class="line">  return NSAllocateObject(self, 0, z);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">NSAllocateObject(Class aClass, NSUInteger extraBytes, NSZone *zone)</span><br><span class="line">&#123;</span><br><span class="line">  id	new;</span><br><span class="line">#ifdef OBJC_CAP_ARC</span><br><span class="line">  if ((new = class_createInstance(aClass, extraBytes)) != nil)</span><br><span class="line">    &#123;</span><br><span class="line">      AADD(aClass, new);</span><br><span class="line">    &#125;</span><br><span class="line">#else</span><br><span class="line">  int	size;</span><br><span class="line">  NSCAssert((!class_isMetaClass(aClass)), @&quot;Bad class for new object&quot;);</span><br><span class="line">  size = class_getInstanceSize(aClass) + extraBytes + sizeof(struct obj_layout);</span><br><span class="line">  if (zone == 0)</span><br><span class="line">    &#123;</span><br><span class="line">      zone = NSDefaultMallocZone();</span><br><span class="line">    &#125;</span><br><span class="line">  new = NSZoneMalloc(zone, size);</span><br><span class="line">  if (new != nil)</span><br><span class="line">    &#123;</span><br><span class="line">      memset (new, 0, size);</span><br><span class="line">      new = (id)&amp;((obj)new)[1];</span><br><span class="line">      object_setClass(new, aClass);</span><br><span class="line">      AADD(aClass, new);</span><br><span class="line">    &#125;</span><br><span class="line">  if (0 == cxx_construct)</span><br><span class="line">    &#123;</span><br><span class="line">      cxx_construct = sel_registerName(&quot;.cxx_construct&quot;);</span><br><span class="line">      cxx_destruct = sel_registerName(&quot;.cxx_destruct&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">  callCXXConstructors(aClass, new);</span><br><span class="line">#endif</span><br><span class="line">  return new;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>注意到<code>obj_layout</code>了没，他里面有个<code>retained</code>这就是用来存引用计数的</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">struct obj_layout &#123;</span><br><span class="line"></span><br><span class="line">  char	padding[__BIGGEST_ALIGNMENT__ - ((UNP % __BIGGEST_ALIGNMENT__)</span><br><span class="line"></span><br><span class="line">    ? (UNP % __BIGGEST_ALIGNMENT__) : __BIGGEST_ALIGNMENT__)];</span><br><span class="line"></span><br><span class="line">  gsrefcount_t retained;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br><span class="line">typedef	struct obj_layout *obj;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>其实，说了这么多，就是想说，在创建对象的时候，有个保存引用计数的变量。感觉说了一堆废话…</p>
-<p><strong>持有</strong><br>接下来，了解一下持有对象：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">- (id) retain</span><br><span class="line">&#123;</span><br><span class="line">  return retain_fast(self);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static id retain_fast(id anObject)</span><br><span class="line">&#123;</span><br><span class="line">#ifdef SUPPORT_WEAK</span><br><span class="line">  if (objc_retain_fast_np)</span><br><span class="line">    &#123;</span><br><span class="line">      return objc_retain_fast_np(anObject);</span><br><span class="line">    &#125;</span><br><span class="line">  else</span><br><span class="line">#endif</span><br><span class="line">    &#123;</span><br><span class="line">      return objc_retain_fast_np_internal(anObject);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">static id objc_retain_fast_np_internal(id anObject)</span><br><span class="line">&#123;</span><br><span class="line">  BOOL  tooFar = NO;</span><br><span class="line">#if	defined(GSATOMICREAD)</span><br><span class="line"></span><br><span class="line">  if (GSAtomicIncrement((gsatomic_t)&amp;(((obj)anObject)[-1].retained)) &gt; 0xfffffe)</span><br><span class="line">    &#123;</span><br><span class="line">      tooFar = YES;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">#else	/* GSATOMICREAD */</span><br><span class="line">  pthread_mutex_t *theLock = GSAllocationLockForObject(anObject);</span><br><span class="line">  pthread_mutex_lock(theLock);</span><br><span class="line">  if (((obj)anObject)[-1].retained &gt; 0xfffffe)</span><br><span class="line">    &#123;</span><br><span class="line">      tooFar = YES;</span><br><span class="line">    &#125;</span><br><span class="line">  else</span><br><span class="line">    &#123;</span><br><span class="line">      ((obj)anObject)[-1].retained++;</span><br><span class="line">    &#125;</span><br><span class="line">  pthread_mutex_unlock(theLock);</span><br><span class="line">#endif	/* GSATOMICREAD */</span><br><span class="line">  if (YES == tooFar)</span><br><span class="line">    &#123;</span><br><span class="line">      static NSHashTable        *overrun = nil;</span><br><span class="line">      [gnustep_global_lock lock];</span><br><span class="line">      if (nil == overrun)</span><br><span class="line">        &#123;</span><br><span class="line">          overrun = NSCreateHashTable(NSNonRetainedObjectHashCallBacks, 0);</span><br><span class="line">        &#125;</span><br><span class="line">      if (0 == NSHashGet(overrun, anObject))</span><br><span class="line">        &#123;</span><br><span class="line">          NSHashInsert(overrun, anObject);</span><br><span class="line">        &#125;</span><br><span class="line">      else</span><br><span class="line">        &#123;</span><br><span class="line">          tooFar = NO;</span><br><span class="line">        &#125;</span><br><span class="line">      [gnustep_global_lock lock];</span><br><span class="line">    	if (YES == tooFar)</span><br><span class="line">        &#123;</span><br><span class="line">          NSString      *base;</span><br><span class="line">			  base = [NSString stringWithFormat: @&quot;&lt;%s: %p&gt;&quot;,</span><br><span class="line">          class_getName([anObject class]), anObject];</span><br><span class="line">          [NSException raise: NSInternalInconsistencyException</span><br><span class="line">            format: @&quot;NSIncrementExtraRefCount() asked to increment too far&quot;</span><br><span class="line">            @&quot; for %@ - %@&quot;, base, anObject];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  return anObject;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>简单来说，就是在持有对象的时候，让对象的引用计数++。</p>
-<p><strong>释放</strong><br>限于篇幅，释放就不贴代码了。就是每次调用的时候让对象的引用计数–。<br>这里 GNUstep 做了一个简单的容错，当引用计数&lt;0时，让其&#x3D;0。<br>当引用计数为0时，调用<code>[self dealloc]</code>方法，也就是销毁对象的方法。</p>
-<p><strong>销毁</strong><br><code>dealloc</code>方法里面又调用了<code>NSDeallocateObject(self)</code>方法。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">NSDeallocateObject(id anObject)</span><br><span class="line">&#123;</span><br><span class="line">  Class aClass = object_getClass(anObject);</span><br><span class="line">  if ((anObject != nil) &amp;&amp; !class_isMetaClass(aClass))</span><br><span class="line">    &#123;</span><br><span class="line">#ifndef OBJC_CAP_ARC</span><br><span class="line">      obj	o = &amp;((obj)anObject)[-1];</span><br><span class="line">      NSZone	*z = NSZoneFromPointer(o);</span><br><span class="line">#endif</span><br><span class="line">      (*finalize_imp)(anObject, finalize_sel);</span><br><span class="line">      AREM(aClass, (id)anObject);</span><br><span class="line">      if (NSZombieEnabled == YES)</span><br><span class="line">	&#123;</span><br><span class="line">#ifdef OBJC_CAP_ARC</span><br><span class="line">	  if (0 != zombieMap)</span><br><span class="line">	    &#123;</span><br><span class="line">              pthread_mutex_lock(&amp;allocationLock);</span><br><span class="line"></span><br><span class="line">	      NSMapInsert(zombieMap, (void*)anObject, (void*)aClass);</span><br><span class="line"></span><br><span class="line">              pthread_mutex_unlock(&amp;allocationLock);</span><br><span class="line">	    &#125;</span><br><span class="line">	  if (NSDeallocateZombies == YES)</span><br><span class="line">	    &#123;</span><br><span class="line">	      object_dispose(anObject);</span><br><span class="line">	    &#125;</span><br><span class="line">	  else</span><br><span class="line">	    &#123;</span><br><span class="line">	      object_setClass(anObject, zombieClass);</span><br><span class="line">	    &#125;</span><br><span class="line">#else</span><br><span class="line">	  GSMakeZombie(anObject, aClass);</span><br><span class="line">	  if (NSDeallocateZombies == YES)</span><br><span class="line">	    &#123;</span><br><span class="line">	      NSZoneFree(z, o);</span><br><span class="line">	    &#125;</span><br><span class="line">#endif</span><br><span class="line">	&#125;</span><br><span class="line">      else</span><br><span class="line">	&#123;</span><br><span class="line">#ifdef OBJC_CAP_ARC</span><br><span class="line">	  object_dispose(anObject);</span><br><span class="line">#else</span><br><span class="line">	  object_setClass((id)anObject, (Class)(void*)0xdeadface);</span><br><span class="line">	  NSZoneFree(z, o);</span><br><span class="line">#endif</span><br><span class="line">	&#125;</span><br><span class="line">    &#125;</span><br><span class="line">  return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面这么一大堆就是销毁最开始<code>alloc</code>分配的内存。</p>
-<p>以上就是一个对象完整的生命周期了。</p>
-<h5 id="autorelease"><a href="#autorelease" class="headerlink" title="autorelease"></a>autorelease</h5><p>说到这个内存管理，autorelease 也需要了解一下。<br>autorelease 与作用域的概念很类似，当超出其作用范围时，销毁作用域里面的变量。<br>其步骤如下：</p>
-<ol>
-<li>生成并持有 NSAutoreleasePool 对象</li>
-<li>调用已分配对象的 autorelease 实例方法</li>
-<li>废弃 NSAutoreleasePool 对象</li>
-</ol>
-<p>有个很典型的例子：<br>在大量读入图片改变其尺寸时，图像文件读入到 NSData 对象，并从中生成 UIImage 对象，改变该对象尺寸后生成新的 UIImage 对象。这种情况下，就会大量产生 autorelease 对象。<br>在这种情况下，有必要在适当的地方生成、持有或废弃 NSAutoreleasePool 对象。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">for (int i = 0; i &lt; 图片数量; i++)&#123;</span><br><span class="line">	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];</span><br><span class="line">	/**</span><br><span class="line">	 * 读入图像</span><br><span class="line">	 * 产生大量 autorelease 对象</span><br><span class="line">	 */</span><br><span class="line">	 [pool drain];	// autorelease 的对象被一起 release</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>以上就是 Objective-C 的内存管理。其实无论 ARC 还是 MRC 都一样，区别就是 ARC 的情况下，编译器帮我们在合适的地方加入了 retain 和 release 操作。</p>
-<h5 id="内存管理语义"><a href="#内存管理语义" class="headerlink" title="内存管理语义"></a>内存管理语义</h5><p>还记得上一篇讲声明成员变量的两种方式那篇文章么，其中在用<code>@property</code>这种方式的时候，可以指定该属性的所有权修饰符。<br>ARC 下常用的修饰符有4种：</p>
-<ul>
-<li>__autoreleasing</li>
-<li>__strong</li>
-<li>__unsafe_unretained</li>
-<li>__weak</li>
-</ul>
-<p>是不是有点疑惑，和我们常用的不一样。别慌<a href="http://clang.llvm.org/docs/AutomaticReferenceCounting.html">文档</a>告诉我们该怎么用。</p>
-<ul>
-<li>assign 和 __unsafe_unretained 一样，表示非拥有关系。</li>
-<li>copy 和 __strong 一样表示拥有关系，还多出来了 setter 上复制语义的通常行为。</li>
-<li>retain 和 __strong 一样表示拥有关系。</li>
-<li>strong 和 __strong 一样表示拥有关系。</li>
-<li>weak 和 __weak 一样，表示非拥有关系。</li>
-<li>unsafe_unretained 和 __unsafe_unretained 一样，表示非拥有关系。</li>
-</ul>
-<p><strong>__strong</strong><br>__strong是 id 类型和对象类型的默认修饰符。strong顾名思义”强引用”。超出其作用域时，强引用失效。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">// objA 持有 对象 A 的强引用</span><br><span class="line">id __strong objA = [[NSObject alloc] init];   // 对象 A</span><br><span class="line">// objB 持有 对象 B 的强引用</span><br><span class="line">id __strong objB = [[NSObject alloc] init];   // 对象 B</span><br><span class="line">// objC 不持有任何对象</span><br><span class="line">id __strong objC = nil;</span><br><span class="line">/**</span><br><span class="line"> * objA 持有objB 对象的强引用</span><br><span class="line"> * 所以 原来由 objA 持有的对象A，强引用失效，对象A 的持有者不存在，所以废弃对象 A</span><br><span class="line"> * 此时，对象 B 的强引用变量变为 objA 和 objB。</span><br><span class="line"> */</span><br><span class="line">objA = objB;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * objC 持有objA 的对象 B 的强引用</span><br><span class="line"> * 此时，对象 B 的强引用变量变为 objA， objB 和 objC。</span><br><span class="line"> */</span><br><span class="line">objC = objA;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * objB 被赋值为 nil，不再持有原对象 B</span><br><span class="line"> * 此时，对象 B 的强引用变量变为 objA 和 objC。</span><br><span class="line"> */</span><br><span class="line">objB = nil;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * objA 被赋值为 nil，不再持有原对象 B</span><br><span class="line"> * 此时，对象 B 的强引用变量变为 objC。</span><br><span class="line"> */</span><br><span class="line">objA = nil;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * objC 被赋值为 nil，不再持有原对象 B</span><br><span class="line"> * 此时，对象 B 的强引用不存在，因此废弃对象 B</span><br><span class="line"> */</span><br><span class="line">objC = nil;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p><strong>__weak</strong><br>引用计数管理有个绕不开的问题就是循环引用，当对象 A 和对象 B 都互相持有对方，那他们的引用计数就永远不可能为0，那就不能被释放，导致内存泄露。所以内存泄露就是指应该被废弃的对象在超出其生命周期后继续存在。</p>
-<p>__weak 除了能消除循环引用外， 还有一个优点就是当持有的对象被销毁是，此弱引用将自动失效且处于 被nil 复制的状态。</p>
-<p>所有被 __weak 修饰的对象，都会被加入到自动释放池中。(每次访问该对象，都会注册到自动释放池，开销更大，所以在 block 外部使用 __weak修饰的对象打破循环引用后，在 block 内部改为用 __strong修饰，以节省开销)</p>
-<p><strong>__unsafe_unretained</strong><br>__unsafe_unretained 和 __weak 很像，但是当对象被销毁后，再访问该对象会出现奔溃(悬垂指针)。所以一般来说，对象用 weak 修饰，标量类型由 assign 修饰。</p>
-<p><strong>__autoreleasing</strong><br>这个类型和上述的 atuorelease 的作用一样，就是将被修饰的对象，放入自动释放池中。</p>
-<p>Objective-C 的内存管理大概就是这么回事了吧。</p>
-<h4 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h4><ul>
-<li><a href="http://clang.llvm.org/docs/AutomaticReferenceCounting.html">自动引用计数</a><br><a href="https://github.com/gnustep/libs-base/blob/master/Source/NSObject.m">GNUstep 中的 NSObject</a></li>
-<li>《Objective-C 高级编程》</li>
-</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/08/iOS%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" data-id="cm4p02l8y0006xdca5fvo2ao2" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/03/03/hello-world/" class="article-date">
-  <time datetime="2016-03-03T12:01:10.000Z" itemprop="datePublished">2016-03-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/03/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>终于弄一个写东西的地方，不过按我尿性，怕是基本不更新(doge</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/03/hello-world/" data-id="cm4p02l8w0005xdcagkcl36sd" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/03/04/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E4%B8%83%EF%BC%89/" data-id="cm4p9jy3e0004ceca7ill5jfj" class="article-share-link">Share</a>
       
       
     </footer>
@@ -787,6 +608,11 @@
 
   
 
+
+  <nav id="page-nav">
+    
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+  </nav>
 
 </section>
         
@@ -804,7 +630,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">June 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">May 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">March 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">February 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">January 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">June 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
     </div>
   </div>
 
@@ -817,23 +643,23 @@
       <ul>
         
           <li>
-            <a href="/2016/10/16/iOS%20%E6%8E%A5%E5%8F%A3%E4%B8%8EAPI%E8%AE%BE%E8%AE%A1/">iOS 接口与API设计</a>
+            <a href="/2017/09/10/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E5%85%AD%EF%BC%89/">人月神话（十六）</a>
           </li>
         
           <li>
-            <a href="/2016/09/11/KVC/">KVC</a>
+            <a href="/2017/08/15/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%BA%94%EF%BC%89/">人月神话（十五）</a>
           </li>
         
           <li>
-            <a href="/2016/08/07/KVO/">KVO</a>
+            <a href="/2017/07/16/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E5%9B%9B%EF%BC%89/">人月神话（十四）</a>
           </li>
         
           <li>
-            <a href="/2016/07/06/RunLoop/">RunLoop</a>
+            <a href="/2017/06/11/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89/">人月神话（十三）</a>
           </li>
         
           <li>
-            <a href="/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/">Objective-C 之消息机制</a>
+            <a href="/2017/05/27/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88%E5%8D%81%E4%BA%8C%EF%BC%89/">人月神话（十二）</a>
           </li>
         
       </ul>
