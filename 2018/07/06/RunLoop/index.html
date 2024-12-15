@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>RunLoop | sinexy&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="RunLoop 的概念一般来讲，一个县城一次只能执行一个任务，执行完之后线程就会退出。如果我们需要一个机制，让线程能随时处理事件但并不退出，就需要一个 RunLoop 对象。 实现这种模型的关键带你在于：如果管理事件&#x2F;消息，如何让线程在没有处理消息时休眠以避免资源占用、在有消息到来时立刻被唤醒。 所以，RunLoop 实际上就是一个对象，这个对象管理了其需要处理的事件和消息，并提供了一个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RunLoop">
+<meta property="og:url" content="http://yoursite.com/2018/07/06/RunLoop/index.html">
+<meta property="og:site_name" content="sinexy&#39;s blog">
+<meta property="og:description" content="RunLoop 的概念一般来讲，一个县城一次只能执行一个任务，执行完之后线程就会退出。如果我们需要一个机制，让线程能随时处理事件但并不退出，就需要一个 RunLoop 对象。 实现这种模型的关键带你在于：如果管理事件&#x2F;消息，如何让线程在没有处理消息时休眠以避免资源占用、在有消息到来时立刻被唤醒。 所以，RunLoop 实际上就是一个对象，这个对象管理了其需要处理的事件和消息，并提供了一个">
+<meta property="og:locale">
+<meta property="og:image" content="https://blog.ibireme.com/wp-content/uploads/2015/05/RunLoop_0.png">
+<meta property="article:published_time" content="2018-07-06T06:18:56.000Z">
+<meta property="article:modified_time" content="2024-12-15T02:37:39.051Z">
+<meta property="article:author" content="Yunxin Bai">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.ibireme.com/wp-content/uploads/2015/05/RunLoop_0.png">
+  
+    <link rel="alternate" href="/atom.xml" title="sinexy&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">sinexy&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-RunLoop" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/06/RunLoop/" class="article-date">
+  <time datetime="2018-07-06T06:18:56.000Z" itemprop="datePublished">2018-07-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      RunLoop
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>RunLoop 的概念</strong><br>一般来讲，一个县城一次只能执行一个任务，执行完之后线程就会退出。如果我们需要一个机制，让线程能随时处理事件但并不退出，就需要一个 RunLoop 对象。</p>
+<p>实现这种模型的关键带你在于：如果管理事件&#x2F;消息，如何让线程在没有处理消息时休眠以避免资源占用、在有消息到来时立刻被唤醒。</p>
+<p>所以，RunLoop 实际上就是一个对象，这个对象管理了其需要处理的事件和消息，并提供了一个入口函数来执行上面 Event Loop 的逻辑。线程执行了这个函数后，就会一直处于这个函数内部“接受消息-&gt;等待-&gt;处理”的循环中，直到这个循环结束（比如传入 quit 的消息），函数返回。</p>
+<p><strong>RunLoop 与线程的关系</strong><br>首先，iOS 开发中能遇到两个线程对象：pthread_t 和 NSThread。苹果不允许直接创建  RunLoop，它只是提供了两个自动获取的函数：<code>CFRunLoopGetMain()</code>和<code>CFRunLoopGetCurrent()</code>。这两个函数内部的逻辑大概是这样的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">// 全局的 Dictionary，key 是 pthread_t，value 是 CFRunLoopRef</span><br><span class="line">static CFMutableDictionaryRef loopsDic;</span><br><span class="line">// 访问 loopsDic 时的锁</span><br><span class="line">static CFSpinLock_t loopsLock;</span><br><span class="line">// 获取一个 pthread 对应的 RunLoop</span><br><span class="line">CFRunLoopRef _CFRunLoopGet(pthread_t thread)&#123;</span><br><span class="line">	OSSpinLockLock(&amp;loopsLock);</span><br><span class="line">	</span><br><span class="line">	if(!loopsLook) &#123;</span><br><span class="line">		// 第一次进入时，初始化全局 Dic，并先为主线程创建一个  RunLoop。</span><br><span class="line">		loopsDic = CFDictionaryCreateMutable();</span><br><span class="line">		CFRunLoopRef mainLoop = _CFRunLoopCreate();</span><br><span class="line">		CFDictionarySetValue(loopsDic, pthread_main_thread_np(), mianLoop);</span><br><span class="line">	&#125;</span><br><span class="line">	// 直接从 Dictionary 里获取。</span><br><span class="line">	CFRunLoopRef loop = CFDictionaryGetValue(loopsDic, thread);</span><br><span class="line">	if (!loop) &#123;</span><br><span class="line">		// 取不到时，创建一个</span><br><span class="line">		loop = _CFRunLoopCreate();</span><br><span class="line">		CFDictionarySetValue(loopsDic, thread, loop);</span><br><span class="line">		// 注册一个回调，当线程销毁时，顺便也销毁其对应的 RunLoop</span><br><span class="line">		_CFSetTSD(..., thread, loop, __CFFinalizeRunLoop);</span><br><span class="line">	&#125;</span><br><span class="line">	OSSpinLockUnLock(&amp;loopsLock);</span><br><span class="line">	return loop;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从上面的代码可以看出，线程和 RunLoop 之间是一一对应的，其关系是保存再一个全局的 Dictionary 里。线程刚创建时并没有 RunLoop，如果你不主动获取，那它一直都不会有。RunLoop 的创建是发生在第一次获取时，RunLoop 的销毁是发生在线程结束时。你只能在一个线程的内部获取其 RunLoop（主线程除外）。</p>
+<p><strong>RunLoop 对外的接口</strong><br>在 CoreFoundation 里面关于 RunLoop 有5个类：</p>
+<ul>
+<li>CFRunLoopRef</li>
+<li>CFRunLoopModeRef</li>
+<li>CFRunLoopSourceRef</li>
+<li>CFRunLoopTimerRef</li>
+<li>CFRunLoopObserverRef</li>
+</ul>
+<p>其中 CFRunLoopModeRef 类并没有对外暴露，只是通过 CFRunLoopRef 的接口进行了封装。他们的关系如下：<br><img src="https://blog.ibireme.com/wp-content/uploads/2015/05/RunLoop_0.png"></p>
+<p>一个 RunLoop 包含若干个 Mode，每个 Mode 又包含若干个 Source&#x2F;Timer&#x2F;Observer。每次调用 RunLoop的主函数时，只能指定其中一个 Mode，这个 Mode 被称作 CurrentMode。如果需要切换 Mode，只能退出 Loop，再重新指定一个 Mode 进入。这样做主要是为了分隔开不同组的 Source&#x2F;Timer&#x2F;Observer，让其互不影响。</p>
+<p>CFRunLoopSourceRef 是事件产生的地方。Source 有两个版本：Source0和 source1.</p>
+<ul>
+<li>Source0 只包含了一个回调(函数指针)，它并不能主动触发事件。使用时，你需要先调用 CFRunLoopSourceSignal(source)，将这个 Source 标记为待处理，然后手动调用 CFRunLoopWakeUp(runloop)来唤醒 RunLoop，让其处理这个事件。</li>
+<li>Source1 包含了一个 mach_port 和一个回调（函数指针），被用于通过内核和其他线程相互发送消息。这种 Source 能主动唤醒 RunLoop 的线程，其原理在下面会讲到。</li>
+</ul>
+<p>CFRunLoopTimerRef 是基于时间的触发器，它和 NSTimer 是 toll-free bridged 的，可以混用。其包含一个时间长度和一个回调（函数指针）。当其加入到 RunLoop 时，RunLoop 会注册对应的时间点，当时间点到时，RunLoop 会被唤醒以执行那个回调。</p>
+<p>CFRunLoopObserverRef 是观察者，每个 Observer 都包含了一个回调（函数指针），当 RunLoop 的状态发生变化时，观察者就能通过回调接收到这个变化。可以管着的时间点有以下几个：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">typedef CF_OPTIONS(CFOptionFlags, CFRunLoopActivity) &#123;</span><br><span class="line">    kCFRunLoopEntry         = (1UL &lt;&lt; 0), // 即将进入Loop</span><br><span class="line">    kCFRunLoopBeforeTimers  = (1UL &lt;&lt; 1), // 即将处理 Timer</span><br><span class="line">    kCFRunLoopBeforeSources = (1UL &lt;&lt; 2), // 即将处理 Source</span><br><span class="line">    kCFRunLoopBeforeWaiting = (1UL &lt;&lt; 5), // 即将进入休眠</span><br><span class="line">    kCFRunLoopAfterWaiting  = (1UL &lt;&lt; 6), // 刚从休眠中唤醒</span><br><span class="line">    kCFRunLoopExit          = (1UL &lt;&lt; 7), // 即将退出Loop</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>上面的 Source&#x2F;Timer&#x2F;Observer 被统称为 mode item，一个 item 可以被同时加入多个 mode。但一个 item 被重复加入同一个 mode 时是不会有效果的。如果一个 mode 中一个 item 都没有，则 RunLoop 会直接退出，不进入循环。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/07/06/RunLoop/" data-id="cm4p02l8v0004xdca919f5hlg" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2024/12/15/hello-world/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Hello World
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/07/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Objective-C 之消息机制</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">December 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/12/15/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/06/RunLoop/">RunLoop</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/">Objective-C 之消息机制</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/15/Objective-C%20Runtime%20%E4%B9%8B%20Class/">Objective-C Runtime 之 Class</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/08/iOS%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">Objective-C 的内存管理</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Yunxin Bai<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

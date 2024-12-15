@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Objective-C 声明变量的两种常见方式 | sinexy&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言：昨天突然想起前同事问过的一个问题 123&#123;	NSString *_aString;&#125; 和 1@property (nonatomic, copy) NSString *aString; 这两种写法有什么区别？正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。 正文：声明在&#123;&#125;中的，叫做成员变量；">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Objective-C 声明变量的两种常见方式">
+<meta property="og:url" content="http://yoursite.com/2018/06/06/Objective-C-%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F/index.html">
+<meta property="og:site_name" content="sinexy&#39;s blog">
+<meta property="og:description" content="前言：昨天突然想起前同事问过的一个问题 123&#123;	NSString *_aString;&#125; 和 1@property (nonatomic, copy) NSString *aString; 这两种写法有什么区别？正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。 正文：声明在&#123;&#125;中的，叫做成员变量；">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-06-06T04:11:21.000Z">
+<meta property="article:modified_time" content="2024-12-15T02:37:39.051Z">
+<meta property="article:author" content="Yunxin Bai">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="sinexy&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">sinexy&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Objective-C-声明变量的两种常见方式" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/06/Objective-C-%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F/" class="article-date">
+  <time datetime="2018-06-06T04:11:21.000Z" itemprop="datePublished">2018-06-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Objective-C 声明变量的两种常见方式
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h4><p>昨天突然想起前同事问过的一个问题</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	NSString *_aString;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>和</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic, copy) NSString *aString;</span><br></pre></td></tr></table></figure>
+<p>这两种写法有什么区别？<br>正好在一个开发群里，也看到过类似问题，索性写一段话来表达一下自己的看法。有任何不对的地方，还望大家批评指正。</p>
+<h4 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h4><p>声明在<code>&#123;&#125;</code>中的，叫做成员变量；而用 <code>@property</code>修饰的，顾名思义叫做属性。</p>
+<p>先说区别：</p>
+<ul>
+<li><p>在’{}’中声明的成员变量，级别是<code>protected</code>的。简单来说就是子类和当前类可以使用这个成员变量，其他类不可以。而用‘@property’声明的变量,级别是<code>public</code>，可以在当前类或者其他类中被访问。</p>
+</li>
+<li><p>在’{}’中声明成员变量，使用变量名进行访问；‘@property’声明的变量，使用_变量名(在变量名前加一个下划线),或者self.变量名进行访问。</p>
+</li>
+<li><p>在’{}’中声明成员变量，直接访问保存实例变量的那块内存，没有调用 set&#x2F;get 方法，不走“方法派发”(method dispatch)，所以要更快。</p>
+</li>
+<li><p>在’{}’中声明成员变量，不走 set 方法，自然就没有一堆属性特质，那也就绕过了内存管理语义。</p>
+</li>
+<li><p>在’{}’中声明成员变量，不会触发 KVO(Key-Value Observing)。</p>
+</li>
+</ul>
+<p>其实，对于写 Java 或者 C++的同学来说，在’{}’中声明成员变量这种写法再正常不过，而 Objective-C 代码通常不这样写。因为这种写法：</p>
+<blockquote>
+<p>对象布局在编译期(compile time)就已经固定了。</p>
+</blockquote>
+<p>眼神好的同学应该注意到“编译期”这三个字。想想看，Objective-C 的一项重要特性——运行时。在某个类中动态添加属性是不是很高级？</p>
+<blockquote>
+<p>只要碰到访问 _aString 变量的代码，编译器就把其替换为“偏移量”(offset)，这个偏移量是“硬编码”(hardcode)，表示该变量存放对象的内存区域的其实地址有多远。这样做看起来没什么问题，但是如果又加了一个实例变量，那就麻烦了。</p>
+</blockquote>
+<p>当然，这个问题苹果工程师已经解决了，他们的做法是把实例变量当做一种存储偏移量所用的“特殊变量”(special variable)，交由“类对象”(class object)保管。偏移量会在运行期查找，如果类的定义变了，那么存储的偏移量也就变了，无论何时访问实例变量，总能使用正确的偏移量。</p>
+<p>而另一个解决方案就是使用‘@property’。其实</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic) NSString *aString;</span><br></pre></td></tr></table></figure>
+<p>相当于</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	NSString *_aString;</span><br><span class="line">&#125;</span><br><span class="line">- (NSString *)aString;</span><br><span class="line">- (void)setAString:(NSString *)aString;</span><br></pre></td></tr></table></figure>
+
+<p>想要访问属性，可以使用 _aString 或者 self.aString。写 Java 的同学又开心了，因为这个”.属性名”和 Java 的中写看起来一样。其实，在 Objective-C 中，没有”点语法”，这是编译器搞出来的。在使用  self.aString 时，编译器会将其转换为对应的存取方法调用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AObject *aObject = [AObject new];</span><br><span class="line">aObject.aString = @&quot;一堆文字&quot;;</span><br><span class="line">NSLog(@&quot;%@&quot;,aObject.aString);  // 打印结果我不写</span><br></pre></td></tr></table></figure>
+<p>相当于</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AObject *aObject = [AObject new];</span><br><span class="line">[aObject setAString:@&quot;一堆文字&quot;];</span><br><span class="line">NSLog(@&quot;%@&quot;,[aObject aString]);</span><br></pre></td></tr></table></figure>
+<p>如果<code>@property</code>只有这点作用，存在的意义就不大了。所以，属性特质就出现了。(因果逻辑 doge)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic, readwrite, copy) NSString *aString;</span><br></pre></td></tr></table></figure>
+
+<p>说到属性特质，我们可以又扯到 Objective-C 的内存管理去，所以我们下次再聊。</p>
+<h4 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h4><ul>
+<li>Effective+Objective-C+2.0++编写高质量iOS与OS+X代码的52个有效方法</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/06/Objective-C-%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F/" data-id="cm4p02l8u0003xdca40cu1poa" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/06/08/iOS%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Objective-C 的内存管理
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">December 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/12/15/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/06/RunLoop/">RunLoop</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/">Objective-C 之消息机制</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/15/Objective-C%20Runtime%20%E4%B9%8B%20Class/">Objective-C Runtime 之 Class</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/08/iOS%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">Objective-C 的内存管理</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Yunxin Bai<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
