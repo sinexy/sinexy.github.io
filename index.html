@@ -64,10 +64,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-KVC" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-iOS 接口与API设计" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/10/16/KVC/" class="article-date">
-  <time datetime="2016-10-16T02:07:19.000Z" itemprop="datePublished">2016-10-16</time>
+    <a href="/2016/10/16/iOS%20%E6%8E%A5%E5%8F%A3%E4%B8%8EAPI%E8%AE%BE%E8%AE%A1/" class="article-date">
+  <time datetime="2016-10-16T06:01:54.000Z" itemprop="datePublished">2016-10-16</time>
 </a>
     
   </div>
@@ -78,7 +78,69 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/10/16/KVC/">KVC</a>
+      <a class="article-title" href="/2016/10/16/iOS%20%E6%8E%A5%E5%8F%A3%E4%B8%8EAPI%E8%AE%BE%E8%AE%A1/">iOS 接口与API设计</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在团队开发中，不可避免会将某些代码发布出来供其他同事使用，那么我们在编写接口时就会将其设计成易用复用的形式。需要参考 Objective-C 语言的编程范式，还需要了解各种可能遇到的陷阱。</p>
+<p><strong>1. 用前缀避免命名空间冲突</strong><br>OC没有其他语言中内置的命名空间机制，所以我们在命名的时候要设法避免潜在的命名冲突，否则很容易重名。如果发生命名冲突，程序的链接过程就会出错，因为其中出现了重复符号：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">duplicate symbol _OBJC_METACLASS_$_MyClass in:</span><br><span class="line">    build/something.o</span><br><span class="line">    build/something._else.o</span><br><span class="line">duplicate symbol _OBJC_CLASS_$_MyClass in:</span><br><span class="line">    build/something.o</span><br><span class="line">    build/something._else.o</span><br></pre></td></tr></table></figure>
+<p>错误原因在于，两份代码都各自实现了名为<code>MyClass</code>的类，这导致所对应的类符号和“元类”符号各定义了两次。避免此问题的唯一办法是变相实现命名空间，给所有名称都加上适当的前缀。</p>
+<p><strong>2. 提供”全能初始化方法”</strong><br>所有对象都要初始化，在初始化时，有些对象可能无须开发者提供额外信息，但通过来说大部分对象在初始化时候都需要提供某些信息，如果对象不知道必要的信息，则无法完成其工作。<br>比如说，要编写一个学生类。其接口可以这样子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@interface MyStudent: NSObject</span><br><span class="line">@property (nonatomic, copy, readonly) NSString name;</span><br><span class="line">@property (nonatomic, assign, readonly) int age;</span><br><span class="line">@property (nonatomic, assign, readonly) int number;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p>我们把属性声明为只读，这样一来，外界就无法设置 MyStudent 对象的属性了。我们可以提供初始化方法以设置这些属性：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (MyStudent)initWithName:(NSString *)name age:(int)age andNumber:(int)number&#123;</span><br><span class="line">    if((self = [super init]))&#123;</span><br><span class="line">        _name = name;</span><br><span class="line">        _age = age;</span><br><span class="line">        _number = number;</span><br><span class="line">    &#125;</span><br><span class="line">    return self;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>3. 实现 description 方法</strong><br>调试时，经常需要打印并查看对象信息。一种办法是把对象的全部属性都一一输出，但常见的做法还是像下面这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;object = %@&quot;, object);</span><br></pre></td></tr></table></figure>
+<p>在构建需要打印到日志的字符串时，<code>object</code>对象会收到<code>description</code>消息，该方法所返回的描述信息将取代“格式字符串”(format string)里的 “%@”。比如说，<code>object</code>是个数组，用下列代码打印其信息时：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">NSArray *object = @[@&quot;A&quot;,&quot;B&quot;];</span><br><span class="line">NSLog(@&quot;object = %@&quot;, object);</span><br></pre></td></tr></table></figure>
+<p>则会输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">object = (&quot;A&quot;,&quot;B&quot;)</span><br></pre></td></tr></table></figure>
+<p>然而，如果在自定义的类上这么做，那么输出的信息却是下面这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">object = &lt;MyStudent: 0x7fd9a1600600&gt;</span><br></pre></td></tr></table></figure>
+<p>这种日志对我们开发调试没啥帮助，所以我们要在自定义的类里面覆写<code>description</code>方法，输出更有用的信息。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (NSString *)description&#123;</span><br><span class="line">    return [NSStringstringWithFormat:@&quot;&lt;%@: %p, \&quot;%@ %@ %@\&quot;&gt;&quot;,</span><br><span class="line">            [self class], self, _name,_age,_number];</span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>4. 尽量使用不可变对象</strong></p>
+<ul>
+<li>尽量创建不可变的对象</li>
+<li>如果某些属性仅用于对象内部修改，则在”class-continuation 分类”中将其由<code>readonly</code>属性拓展为<code>readwrite</code>属性。</li>
+<li>不要把可变的<code>collection</code>作为属性公开，而应该提供相关方法，以此修改对象中的可变<code>collection</code>。</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/10/16/iOS%20%E6%8E%A5%E5%8F%A3%E4%B8%8EAPI%E8%AE%BE%E8%AE%A1/" data-id="cm4p65ael0000fncacdexhrd8" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-KVC" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/09/11/KVC/" class="article-date">
+  <time datetime="2016-09-11T02:07:19.000Z" itemprop="datePublished">2016-09-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/09/11/KVC/">KVC</a>
     </h1>
   
 
@@ -149,7 +211,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/10/16/KVC/" data-id="cm4p4n62l00007kca6oas4t38" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/09/11/KVC/" data-id="cm4p4n62l00007kca6oas4t38" class="article-share-link">Share</a>
       
       
     </footer>
@@ -742,7 +804,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">June 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">June 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
     </div>
   </div>
 
@@ -755,7 +817,11 @@
       <ul>
         
           <li>
-            <a href="/2016/10/16/KVC/">KVC</a>
+            <a href="/2016/10/16/iOS%20%E6%8E%A5%E5%8F%A3%E4%B8%8EAPI%E8%AE%BE%E8%AE%A1/">iOS 接口与API设计</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/11/KVC/">KVC</a>
           </li>
         
           <li>
@@ -768,10 +834,6 @@
         
           <li>
             <a href="/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/">Objective-C 之消息机制</a>
-          </li>
-        
-          <li>
-            <a href="/2016/05/06/Objective-C-%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F/">Objective-C 声明变量的两种常见方式</a>
           </li>
         
       </ul>
