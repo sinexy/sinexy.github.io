@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>KVC | sinexy&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="KVC 的概念 KVC（Key-Value Coding）是Objective-C中的一个强大机制，它允许通过字符串键来访问对象的属性。这种机制使得代码更具灵活性，尤其是在一些动态属性访问场景中，比如在与集合类型的对象（如NSArray、NSDictionary）交互时，或者在实现数据绑定等高级功能时非常有用。 KVC的核心思想是通过键值对的方式来访问对象的属性，而不是直接通过getter和set">
+<meta property="og:type" content="article">
+<meta property="og:title" content="KVC">
+<meta property="og:url" content="http://yoursite.com/2016/10/16/KVC/index.html">
+<meta property="og:site_name" content="sinexy&#39;s blog">
+<meta property="og:description" content="KVC 的概念 KVC（Key-Value Coding）是Objective-C中的一个强大机制，它允许通过字符串键来访问对象的属性。这种机制使得代码更具灵活性，尤其是在一些动态属性访问场景中，比如在与集合类型的对象（如NSArray、NSDictionary）交互时，或者在实现数据绑定等高级功能时非常有用。 KVC的核心思想是通过键值对的方式来访问对象的属性，而不是直接通过getter和set">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-10-16T02:07:19.000Z">
+<meta property="article:modified_time" content="2024-12-15T04:47:41.471Z">
+<meta property="article:author" content="Yunxin Bai">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="sinexy&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">sinexy&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-KVC" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/10/16/KVC/" class="article-date">
+  <time datetime="2016-10-16T02:07:19.000Z" itemprop="datePublished">2016-10-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      KVC
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>KVC 的概念</strong></p>
+<p><code>KVC（Key-Value Coding）</code>是<code>Objective-C</code>中的一个强大机制，它允许通过字符串键来访问对象的属性。这种机制使得代码更具灵活性，尤其是在一些动态属性访问场景中，比如在与集合类型的对象（如<code>NSArray</code>、<code>NSDictionary</code>）交互时，或者在实现数据绑定等高级功能时非常有用。</p>
+<p><code>KVC</code>的核心思想是通过键值对的方式来访问对象的属性，而不是直接通过<code>getter</code>和<code>setter</code>方法。</p>
+<p>KVC在运行时使用动态消息传递的方式来完成这些操作，因此它对代码的灵活性和扩展性非常重要。</p>
+<p>KVC常见的使用场景包括：</p>
+<ul>
+<li>动态修改对象的属性</li>
+<li>在集合中查找对象</li>
+<li>数据绑定</li>
+<li>在某些特殊场景中替代传统的getter&#x2F;setter方法</li>
+</ul>
+<p><strong>KVC 的工作原理</strong><br><code>KVC</code>通过<code>NSObject</code>类的方法提供属性的动态访问。KVC工作时，调用的是<code>setValue:forKey:</code>和<code>valueForKey:</code>这两个方法。</p>
+<ul>
+<li><code>valueForKey:</code>：获取某个键（属性）对应的值。</li>
+<li><code>setValue:forKey:</code>：设置某个键（属性）对应的值。</li>
+</ul>
+<p>这些方法会被动态地映射到相应的<code>getter</code>和<code>setter</code>方法，因此我们不需要显式地调用<code>setName:</code>或<code>name</code>这样的<code>getter</code>和<code>setter</code>，而是可以通过键来访问和设置属性值。</p>
+<p><strong>KVC 的基本使用</strong></p>
+<ol>
+<li><p>获取值（valueForKey:）<br>使用<code>valueForKey:</code>方法来访问对象的属性值。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NSString *name = [person valueForKey:@&quot;name&quot;];</span><br></pre></td></tr></table></figure>
+<p>这里的<code>name</code>是属性的键（通常是属性名）。<code>KVC</code>会根据键查找相应的<code>getter</code>方法，并返回值。</p>
+</li>
+<li><p>设置值（setValue:forKey:）<br>使用<code>setValue:forKey:</code>方法来修改对象的属性值。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[person setValue:@&quot;John&quot; forKey:@&quot;name&quot;];</span><br></pre></td></tr></table></figure>
+<p>这个方法会调用相应的<code>setter</code>方法来设置<code>name</code>属性。</p>
+</li>
+<li><p>嵌套键路径<br><code>KVC</code>还支持嵌套键路径，允许你访问对象的嵌套属性。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NSString *city = [person valueForKeyPath:@&quot;address.city&quot;];</span><br></pre></td></tr></table></figure>
+<p>这里，<code>address</code>是一个<code>Person</code>对象的属性，而<code>city</code>是<code>address</code>属性的属性。<code>KVC</code>会自动递归地解析这个路径并返回对应的值。</p>
+</li>
+</ol>
+<p><strong>KVC 常见的操作</strong></p>
+<ol>
+<li><p>设置多个属性值（setValuesForKeysWithDictionary:）<br><code>KVC</code>允许你通过字典一次性设置多个属性值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">NSDictionary *dict = @&#123;@&quot;name&quot;: @&quot;John&quot;, @&quot;age&quot;: @30&#125;;</span><br><span class="line">[person setValuesForKeysWithDictionary:dict];</span><br></pre></td></tr></table></figure>
+<p>这个方法会将字典中的键值对映射到对象的属性中。</p>
+</li>
+<li><p>键值验证（validateValue:forKey:）<br><code>KVC</code>允许你在设置值之前对值进行验证。你可以实现<code>validateValue:forKey:</code>方法来确保属性值的合法性。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- (BOOL)validateName:(id *)ioValue error:(NSError **)outError &#123;</span><br><span class="line">    NSString *name = *ioValue;</span><br><span class="line">    if (name.length == 0) &#123;</span><br><span class="line">        if (outError) &#123;</span><br><span class="line">            *outError = [NSError errorWithDomain:@&quot;MyDomain&quot; code:100 userInfo:@&#123;NSLocalizedDescriptionKey: @&quot;Name cannot be empty&quot;&#125;];</span><br><span class="line">        &#125;</span><br><span class="line">        return NO;</span><br><span class="line">    &#125;</span><br><span class="line">    return YES;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法在<code>setValue:forKey:</code>方法调用时会被触发，确保属性值的正确性。</p>
+</li>
+<li><p>访问数组和字典的元素<br><code>KVC</code>允许你使用键来访问数组和字典中的元素：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">NSArray *array = @[@&#123;@&quot;name&quot;: @&quot;John&quot;&#125;, @&#123;@&quot;name&quot;: @&quot;Alice&quot;&#125;];</span><br><span class="line">NSString *firstName = [array valueForKeyPath:@&quot;name[0]&quot;];  // 访问第一个元素的&#x27;name&#x27;</span><br></pre></td></tr></table></figure>
+<p>你可以使用类似于路径的语法来访问数组或字典中的元素。</p>
+</li>
+</ol>
+<p><strong>KVC的优势和不足</strong><br>优势：</p>
+<ul>
+<li>动态访问属性：不需要显式地调用<code>getter/setter</code>方法，可以通过键值的方式动态访问。</li>
+<li>简化代码：特别是在处理集合对象或复杂的嵌套对象时，<code>KVC</code>可以显著减少代码量。</li>
+<li>与集合类型兼容：<code>KVC</code>特别适用于<code>NSArray</code>、<code>NSDictionary</code>等集合类型，可以通过键动态访问集合中的元素或属性。</li>
+</ul>
+<p>不足：</p>
+<ul>
+<li>属性必须是<code>KVC</code>兼容的：<code>KVC</code>只能访问遵循<code>KVC</code>约定的属性。这意味着属性需要有对应的<code>getter</code>和<code>setter</code>方法。如果某个属性没有这些方法，<code>KVC</code>将无法访问。</li>
+<li>不适用于私有变量：<code>KVC</code>默认只操作公开的属性，无法直接访问私有实例变量。如果想要访问私有变量，可以通过<code>valueForKey:</code>来实现，但是需要手动为这些变量提供相应的<code>getter</code>和<code>setter</code>。</li>
+<li>动态类型限制：<code>KVC</code>通过动态消息传递机制实现属性的访问，所以如果你在访问过程中修改了对象的结构（比如在运行时移除或添加某些属性），<code>KVC</code>可能会导致不稳定的行为。</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/10/16/KVC/" data-id="cm4p4n62l00007kca6oas4t38" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/08/07/KVO/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">KVO</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">June 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/10/16/KVC/">KVC</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/07/KVO/">KVO</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/06/RunLoop/">RunLoop</a>
+          </li>
+        
+          <li>
+            <a href="/2016/06/03/Objective-C-%E4%B9%8B%E6%B6%88%E6%81%AF/">Objective-C 之消息机制</a>
+          </li>
+        
+          <li>
+            <a href="/2016/05/06/Objective-C-%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F/">Objective-C 声明变量的两种常见方式</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Yunxin Bai<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
