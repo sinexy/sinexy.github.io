@@ -64,43 +64,6 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/12/15/hello-world/" class="article-date">
-  <time datetime="2024-12-15T02:37:39.051Z" itemprop="datePublished">2024-12-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/12/15/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>终于弄一个写东西的地方，不过按我尿性，怕是基本不更新(doge</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2024/12/15/hello-world/" data-id="cm4p02l8w0005xdcagkcl36sd" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
     <article id="post-RunLoop" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/07/06/RunLoop/" class="article-date">
@@ -123,7 +86,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p><strong>RunLoop 的概念</strong><br>一般来讲，一个县城一次只能执行一个任务，执行完之后线程就会退出。如果我们需要一个机制，让线程能随时处理事件但并不退出，就需要一个 RunLoop 对象。</p>
+        <p><strong>RunLoop 的概念</strong><br>一般来讲，一个线程一次只能执行一个任务，执行完之后线程就会退出。如果我们需要一个机制，让线程能随时处理事件但并不退出，就需要一个 RunLoop 对象。</p>
 <p>实现这种模型的关键带你在于：如果管理事件&#x2F;消息，如何让线程在没有处理消息时休眠以避免资源占用、在有消息到来时立刻被唤醒。</p>
 <p>所以，RunLoop 实际上就是一个对象，这个对象管理了其需要处理的事件和消息，并提供了一个入口函数来执行上面 Event Loop 的逻辑。线程执行了这个函数后，就会一直处于这个函数内部“接受消息-&gt;等待-&gt;处理”的循环中，直到这个循环结束（比如传入 quit 的消息），函数返回。</p>
 <p><strong>RunLoop 与线程的关系</strong><br>首先，iOS 开发中能遇到两个线程对象：pthread_t 和 NSThread。苹果不允许直接创建  RunLoop，它只是提供了两个自动获取的函数：<code>CFRunLoopGetMain()</code>和<code>CFRunLoopGetCurrent()</code>。这两个函数内部的逻辑大概是这样的：</p>
@@ -510,6 +473,43 @@
 
 
   
+    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/03/hello-world/" class="article-date">
+  <time datetime="2018-06-03T12:01:10.000Z" itemprop="datePublished">2018-06-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/03/hello-world/">Hello World</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>终于弄一个写东西的地方，不过按我尿性，怕是基本不更新(doge</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/03/hello-world/" data-id="cm4p02l8w0005xdcagkcl36sd" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
 
 
 </section>
@@ -528,7 +528,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">December 2024</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li></ul>
     </div>
   </div>
 
@@ -539,10 +539,6 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
-        
-          <li>
-            <a href="/2024/12/15/hello-world/">Hello World</a>
-          </li>
         
           <li>
             <a href="/2018/07/06/RunLoop/">RunLoop</a>
@@ -558,6 +554,10 @@
         
           <li>
             <a href="/2018/06/08/iOS%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">Objective-C 的内存管理</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/06/Objective-C-%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F/">Objective-C 声明变量的两种常见方式</a>
           </li>
         
       </ul>
